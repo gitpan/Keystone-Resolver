@@ -1,0 +1,37 @@
+#!/usr/bin/perl -w
+
+# $Id: index.html,v 1.3 2007-06-21 11:42:48 mike Exp $
+
+my $host = $ENV{HTTP_HOST};
+### or maybe one of the following which all seem correctly set:
+#	REDIRECT_HTTP_HOST
+#	REDIRECT_SERVER_NAME
+#	SERVER_NAME
+
+print <<__EOT__;
+<html>
+ <head>
+  <title>Keystone Resolver</title>
+ </head>
+ <body>
+  <p>
+   This is an installation of
+   <b>Keystone Resolver</b>
+  </p>
+  <p>
+  Use
+   <a href="http://$host/resolve"
+       ><tt>http://$host/resolve</tt></a>
+   as the BaseURL of your OpenURL resolver.
+  </p>
+  <p>
+   OpenURLs for this resolver can be generated using
+   <a href="/mod_perl/form2.html">a simple form</a>.
+  </p>
+  <p>
+   The resolver's resource database can be maintained using
+   <a href="/admin/">the admin UI</a>.
+  </p>
+ </body>
+<html>
+__EOT__

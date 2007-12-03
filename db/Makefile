@@ -1,0 +1,41 @@
+# $Id: Makefile,v 1.3 2007-12-01 21:52:34 mike Exp $
+
+all: build
+
+new: clean build
+
+build: db.ok tables.ok data.ok
+
+db.ok: create_db.mysql
+	mysql -u root -p < create_db.mysql
+	touch db.ok
+
+tables.ok: create_tables.mysql db.ok
+	mysql -u'kr_admin' -p'kr_adm_3636' <create_tables.mysql
+	touch tables.ok
+
+data.ok: simple.mysql tables.ok
+	mysql -u'kr_admin' -p'kr_adm_3636' < $<
+	touch data.ok
+
+simple.mysql: simple.d2m data2mysql.pl
+	rm -f $@
+	./data2mysql.pl $< > $@
+	chmod 400 $@
+
+simple.d2m: base.d2m sample.d2m
+	rm -f $@
+	cat base.d2m sample.d2m > $@
+	chmod 400 $@
+
+cufts.d2m: cufts2d2m.pl
+	rm -f $@
+	./$< ../../archive/samples/data/cufts/CUFTS-indexdata > $@
+	chmod 400 $@
+
+clean:
+	rm -f tables.ok data.ok simple.mysql simple.d2m cufts.d2m
+
+realclean: clean
+	rm -f db.ok
+

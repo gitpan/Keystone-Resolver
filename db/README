@@ -1,0 +1,13 @@
+$Id: README,v 1.1 2007-01-26 12:59:05 mike Exp $
+
+This directory contains resource database material, including schemas,
+sample data and database-creation utilities.  Ultimately, Keystone
+Resolver will run against any standard relational database, but for
+now we are only going to think about MySQL for simplicity's sake.
+
+The declarations in this directory constitute an implementation of the
+data model described in "../doc/data-model".  If you change anything
+here, please make sure you also update the corresponding description
+in that file.
+
+
