@@ -1,4 +1,4 @@
-# $Id: ServiceType.pm,v 1.7 2007-06-09 00:11:57 mike Exp $
+# $Id: ServiceType.pm,v 1.8 2007-12-13 17:10:02 mike Exp $
 
 package Keystone::Resolver::DB::ServiceType;
 
@@ -26,7 +26,8 @@ sub search_fields { (tag => "t10",
 
 sub sort_fields { ("priority asc", "name") }
 
-sub display_fields { (tag => "c",
+sub display_fields { (id => "n",
+		      tag => "c",
 		      name => "Lt",
 		      priority => "n",
 		      ) }

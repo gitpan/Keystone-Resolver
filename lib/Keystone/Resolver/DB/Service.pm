@@ -1,4 +1,4 @@
-# $Id: Service.pm,v 1.13 2007-09-20 17:47:37 mike Exp $
+# $Id: Service.pm,v 1.14 2007-12-13 17:09:38 mike Exp $
 
 package Keystone::Resolver::DB::Service;
 
@@ -28,7 +28,7 @@ sub table { "service" }
 # When the fourth element is absent, the link is a dependent one to a
 # single "parent" object; when the fourth element is present, the link
 # is to a list a of associated objects, and the fourth element is the
-# order in which they should be sorted.  Dependent-link virtual fields
+# order in which they should be sorted.  Non-dependent-link virtual fields
 # usually return the name of the parent object, but if a fifth element
 # is specified it is the name of a parent-object field to return.
 #
@@ -82,6 +82,7 @@ sub sort_fields { ("priority asc", "name") }
 # An RHS other than an ARRAY may be preceded by one or more of the
 # following, in any order:
 #	R: readonly (e.g. "Rt" = readonly text)
+#	X: exclude when creating a new object
 #	L: link through to full record
 #
 sub display_fields { (tag => "c",

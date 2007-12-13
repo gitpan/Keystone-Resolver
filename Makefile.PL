@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.15 2007-12-01 23:59:11 mike Exp $
+# $Id: Makefile.PL,v 1.17 2007-12-11 12:29:52 mike Exp $
 
 use 5.008;
 use ExtUtils::MakeMaker;
@@ -47,11 +47,18 @@ debian/output:
 	mv ../*.deb ../*.dsc ../*.tar.gz ../*.changes debian/output
 #	(cd debian/output; for i in *.deb; do name=`echo $$i | sed 's/\.deb$$//'`; dpkg-deb -c $$i > $$name.list; done)
 
+debclean:
+	rm -rf debian/output
+
 debinstall: debian/output
 	sudo dpkg -i debian/output/*.deb
 
 debuninstall:
 	sudo dpkg -r keystone-resolver keystone-resolver-webui libkeystone-resolver-perl keystone-resolver-db
+
+# It's incredibly dumb that we need to do this by hand
+really_uninstall:
+	$(ABSPERLRUN) "-MExtUtils::Install" -e 'uninstall("$(SITEARCHEXP)/auto/$(FULLEXT)/.packlist")'
 ];
 }
 

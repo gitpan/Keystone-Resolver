@@ -1,4 +1,4 @@
-%# $Id: form.mc,v 1.2 2007-06-13 13:52:36 mike Exp $
+%# $Id: form.mc,v 1.3 2007-12-12 15:16:33 marc Exp $
 <%args>
 $submitted
 </%args>
@@ -8,7 +8,7 @@ $submitted
       login:
      </p>
      <p>&nbsp;</p>
-     <form method="get" action="/admin/login.html">
+     <form method="get" action="./login.html">
       <table>
 <& /mc/form/textbox.mc, @params,
 	name => "email_address", label => "Email&nbsp;address" &>

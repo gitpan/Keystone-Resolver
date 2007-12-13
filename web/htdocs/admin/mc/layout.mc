@@ -1,4 +1,4 @@
-%# $Id: layout.mc,v 1.17 2007-12-01 13:45:13 mike Exp $
+%# $Id: layout.mc,v 1.19 2007-12-13 17:08:12 mike Exp $
 <%args>
 $debug => undef
 $title
@@ -68,77 +68,77 @@ $user = $m->notes("user");
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
  <head>
   <title>Keystone Resolver: <% encode_entities($title) %></title>
-  <link rel="stylesheet" type="text/css" href="/admin/style.css"/>
+  <link rel="stylesheet" type="text/css" href="./style.css"/>
  </head>
  <body>
 % $m->comp("/mc/debug/cookies.mc", cookies => $cookies) if $debug;
   <div id="prologue">
-   <h1><a href="/admin/">Keystone Resolver</a>: <% $title %></h1>
+   <h1><a href="./">Keystone Resolver</a>: <% $title %></h1>
   </div>
    <div id="usermenu">
 % if ($user) {
     <div id="umleft">
-     <a href="/admin/user.html"><% encode_entities($user->name()) %></a>
+     <a href="./user.html"><% encode_entities($user->name()) %></a>
      |
-     <a href="/admin/details.html">Details</a>
+     <a href="./details.html">Details</a>
      |	
-     <a href="/admin/password.html">Password</a>
+     <a href="./password.html">Password</a>
     </div>
     <div id="umright">
-     <a href="/admin/logout.html">Logout</a>
+     <a href="./logout.html">Logout</a>
     </div>
 % } else {
     <div id="umright">
-     <a href="/admin/login.html">Login</a>
+     <a href="./login.html">Login</a>
      or
-     <a href="/admin/register.html">Register</a>
+     <a href="./register.html">Register</a>
     </div>
 % }
    </div>
   <div id="menu">
-   <a href="/admin/"><b>Home</b></a>
+   <a href="./"><b>Home</b></a>
    <p>
     Search:
    </p>
    <ul class="tight">
-    <li><a href="/admin/search.html?_class=MetadataFormat">Metadata&nbsp;Format</a></li>
-    <li><a href="/admin/search.html?_class=Genre">Genre</a></li>
-    <li><a href="/admin/search.html?_class=ServiceType">Service Type</a></li>
-    <li><a href="/admin/search.html?_class=Service">Service</a></li>
-    <li><a href="/admin/search.html?_class=Serial">Serial</a></li>
-    <li><a href="/admin/search.html?_class=Domain">Domain</a></li>
-    <li><a href="/admin/search.html?_class=Provider">Provider</a></li>
-    <li><a href="/admin/search.html?_class=ServiceTypeRule">Service Type Rule</a></li>
-    <li><a href="/admin/search.html?_class=ServiceRule">Service Rule</a></li>
+    <li><a href="./search.html?_class=MetadataFormat">Metadata&nbsp;Format</a></li>
+    <li><a href="./search.html?_class=Genre">Genre</a></li>
+    <li><a href="./search.html?_class=ServiceType">Service Type</a></li>
+    <li><a href="./search.html?_class=Service">Service</a></li>
+    <li><a href="./search.html?_class=Serial">Serial</a></li>
+    <li><a href="./search.html?_class=Domain">Domain</a></li>
+    <li><a href="./search.html?_class=Provider">Provider</a></li>
+    <li><a href="./search.html?_class=ServiceTypeRule">Service Type Rule</a></li>
+    <li><a href="./search.html?_class=ServiceRule">Service Rule</a></li>
 % if ($user && $user->admin() > 1) {
-    <li><a href="/admin/search.html?_class=User"><b>User</b></a></li>
+    <li><a href="./search.html?_class=User"><b>User</b></a></li>
 % }
    </ul>
    <p>
     Browse:
    </p>
    <ul class="tight">
-    <li><a href="/admin/search.html?_class=MetadataFormat&_submit=Search">Metadata&nbsp;Format</a></li>
-    <li><a href="/admin/search.html?_class=Genre&_submit=Search">Genre</a></li>
-    <li><a href="/admin/search.html?_class=ServiceType&_submit=Search">Service Type</a></li>
-    <li><a href="/admin/search.html?_class=Service&_submit=Search">Service</a></li>
-    <li><a href="/admin/search.html?_class=Serial&_submit=Search">Serial</a></li>
-    <li><a href="/admin/search.html?_class=Domain&_submit=Search">Domain</a></li>
-    <li><a href="/admin/search.html?_class=Provider&_submit=Search">Provider</a></li>
-    <li><a href="/admin/search.html?_class=ServiceTypeRule&_submit=Search">Service Type Rule</a></li>
-    <li><a href="/admin/search.html?_class=ServiceRule&_submit=Search">Service Rule</a></li>
+    <li><a href="./search.html?_class=MetadataFormat&amp;_submit=Search">Metadata&nbsp;Format</a></li>
+    <li><a href="./search.html?_class=Genre&amp;_submit=Search">Genre</a></li>
+    <li><a href="./search.html?_class=ServiceType&amp;_submit=Search">Service Type</a></li>
+    <li><a href="./search.html?_class=Service&amp;_submit=Search">Service</a></li>
+    <li><a href="./search.html?_class=Serial&amp;_submit=Search">Serial</a></li>
+    <li><a href="./search.html?_class=Domain&amp;_submit=Search">Domain</a></li>
+    <li><a href="./search.html?_class=Provider&amp;_submit=Search">Provider</a></li>
+    <li><a href="./search.html?_class=ServiceTypeRule&amp;_submit=Search">Service Type Rule</a></li>
+    <li><a href="./search.html?_class=ServiceRule&amp;_submit=Search">Service Rule</a></li>
 % if ($user && $user->admin() > 1) {
-    <li><a href="/admin/search.html?_class=User&_submit=Search"><b>User</b></a></li>
+    <li><a href="./search.html?_class=User&amp;_submit=Search"><b>User</b></a></li>
 % }
    </ul>
    <br/>
    <p>
     <a href="http://validator.w3.org/check?uri=referer"><img
-	src="/admin/valid-xhtml10.png"
+	src="./valid-xhtml10.png"
 	alt="Valid XHTML 1.0 Strict" height="31" width="88" /></a>
     <br/>
     <a href="http://jigsaw.w3.org/css-validator/"><img
-	src="/admin/vcss.png"
+	src="./vcss.png"
 	alt="Valid CSS!" height="31" width="88" /></a>
    </p>
   </div>

@@ -1,4 +1,4 @@
-%# $Id: submitted.mc,v 1.2 2007-05-29 11:22:25 mike Exp $
+%# $Id: submitted.mc,v 1.3 2007-12-12 15:16:33 marc Exp $
 <%args>
 $email_address
 $password
@@ -17,7 +17,7 @@ if (!defined $user) {
       </p>
       <p>
        Please go back and
-       <a href="/admin/login.html?email_address=<%
+       <a href="./login.html?email_address=<%
 	uri_escape_utf8($email_address) %>">try again</a>.
       </p>
      </div>

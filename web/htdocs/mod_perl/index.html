@@ -1,12 +1,15 @@
 #!/usr/bin/perl -w
 
-# $Id: index.html,v 1.3 2007-06-21 11:42:48 mike Exp $
+# $Id: index.html,v 1.6 2007-12-13 17:08:34 mike Exp $
 
-my $host = $ENV{HTTP_HOST};
+my $host = $ENV{'HTTP_HOST'};
 ### or maybe one of the following which all seem correctly set:
 #	REDIRECT_HTTP_HOST
 #	REDIRECT_SERVER_NAME
 #	SERVER_NAME
+
+my $uri = $ENV{'REQUEST_URI'};
+$uri =~ s/(.*)\/.*/$1/;
 
 print <<__EOT__;
 <html>
@@ -20,8 +23,8 @@ print <<__EOT__;
   </p>
   <p>
   Use
-   <a href="http://$host/resolve"
-       ><tt>http://$host/resolve</tt></a>
+   <a href="resolve"
+       ><tt>http://$host${uri}/resolve</tt></a>
    as the BaseURL of your OpenURL resolver.
   </p>
   <p>

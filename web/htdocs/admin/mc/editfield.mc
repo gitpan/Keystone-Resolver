@@ -1,4 +1,4 @@
-%# $Id: editfield.mc,v 1.7 2007-09-12 23:42:15 mike Exp $
+%# $Id: editfield.mc,v 1.9 2007-12-13 17:07:24 mike Exp $
 <%args>
 $record		# Reference to a DB::Object::<something>
 $field		# Field name, e.g. "id", "tag", "name"
@@ -7,15 +7,21 @@ $newrecord
 # Note that $fulltype (and $type) are NEVER virtual-field recipes
 </%args>
 <%perl>
-my($UNUSED_link, $readonly, $type) = $record->analyse_type($fulltype, $field);
+my($UNUSED_link, $readonly, $type, $exclude) = $record->analyse_type($fulltype, $field);
 $readonly = 0 if $newrecord && $field ne "id";
 my $htmlclass = $record->type2class($type);
 $type = [ qw(No Yes) ] if $type eq "b";	# booleans handled as enums
 my $text = val2text($type, $record->field($field));
-#warn "record='$record', field='$field', type='$type', text='$text'\n";
+#warn "record='$record', field='$field', type='$type', readonly='$readonly', exclude='$exclude', text='$text'\n";
 
 print qq[     <td class="td-e-$htmlclass">];
-if (ref $text eq "ARRAY" && @$text > 1) {
+if ($newrecord && $exclude) {
+    print "      [none]\n";
+    print qq[     </td>\n];
+    return;
+}
+
+if (ref $text eq "ARRAY" && ($readonly || $exclude)) {
     # List-fields can't be directly edited at the moment: instead,
     # you have to go to one of the linked-to object and change its
     # parent pointer.
@@ -26,7 +32,7 @@ if (ref $text eq "ARRAY" && @$text > 1) {
 	my $class = $obj->class();
 	my $value = $obj->id();
 	print("       <li>",
-	      qq[<a href="/admin/edit.html?_class=$class&amp;id=$value">],
+	      qq[<a href="./edit.html?_class=$class&amp;id=$value">],
 	      $qtext, "</a></li>\n");
     }
     print "      </ul>\n";

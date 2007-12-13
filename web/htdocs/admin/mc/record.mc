@@ -1,4 +1,4 @@
-%# $Id: record.mc,v 1.9 2007-09-12 13:08:33 mike Exp $
+%# $Id: record.mc,v 1.10 2007-12-12 15:16:32 marc Exp $
 <%args>
 $_class
 $id
@@ -22,7 +22,7 @@ my $record = $site->db()->find1($_class, id => $id);
    </table>
 % my $user = $m->comp("/mc/utils/user.mc", require => 0);
 % if (defined $user && $user->admin() > 0) {
-%     my $url = "/admin/edit.html?_class=$_class&amp;id=$id";
+%     my $url = "./edit.html?_class=$_class&amp;id=$id";
 %     print qq[     <p><a href="$url">Edit</a></p>\n];
 %     $m->comp("/mc/newlink.mc", _class => $_class);
 % }

@@ -1,4 +1,4 @@
-%# $Id: displayfield.mc,v 1.2 2007-09-12 16:46:12 mike Exp $
+%# $Id: displayfield.mc,v 1.3 2007-12-12 15:16:32 marc Exp $
 <%args>
 $context	# "s" = short form, "l" = long
 $record		# Reference to a DB::Object::<something>
@@ -70,6 +70,6 @@ sub mumble {
 
 sub linktext {
     my($class, $field, $value) = @_;
-    return qq[<a href="/admin/record.html?_class=$class&amp;$field=$value">];
+    return qq[<a href="./record.html?_class=$class&amp;$field=$value">];
 }
 </%perl>

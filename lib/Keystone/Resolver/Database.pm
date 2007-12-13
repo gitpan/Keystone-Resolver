@@ -1,4 +1,4 @@
-# $Id: Database.pm,v 1.15 2007-09-20 17:48:02 mike Exp $
+# $Id: Database.pm,v 1.17 2007-12-11 17:36:58 mike Exp $
 
 package Keystone::Resolver::Database;
 
@@ -47,10 +47,29 @@ level.
 
 =head2 new()
 
- $des = new Keystone::Resolver::Database($resolver, $name);
+ $db = new Keystone::Resolver::Database($resolver, $name);
+ $rwdb = new Keystone::Resolver::Database($resolver, $name, 1);
 
 Constructs a new Database for the specified resolver, using the
-specified name.
+specified database name.  If an optional third argument is present and
+true, then the database is opened in read-write mode rather than the
+default read-only mode.
+
+Read-only and read-write modes are achieved by connecting to the user
+as one of two different users.
+In read-only mode, the user named by the C<KRuser> environment
+variable is used, together with the password specified by C<KRpw>.
+In read-write mode, the user named by the C<KRrwuser> environment
+variable is used, together with the password specified by C<KRrwpw>.
+B<These environment variables must be set of the resolver will not run.>
+
+The system administrator must ensure that the values provided for
+read-write access do match a username (and password) that has
+read-write access to the resolver database, and ideally that those
+provided for readonly access do not.
+
+The DBMS used (via the DBI framework) defaults to C<mysql>, but this
+is overridden by the C<KRdbms> environment variable if set.
 
 =cut
 
@@ -58,11 +77,17 @@ sub new {
     my $class = shift();
     my($resolver, $name, $rw) = @_;
 
-    my %auth = (kr_read => "kr_read_3636");
-    %auth = (kr_admin => "kr_adm_3636") if $rw;
+    my($user, $pw);
+    if ($rw) {
+	$user = $ENV{KRrwuser} || die "no KRrwuser defined in environment";
+	$pw = $ENV{KRrwpw}     || die "no KRrwpw defined in environment";
+    } else {
+	$user = $ENV{KRuser}   || die "no KRuser defined in environment";
+	$pw = $ENV{KRpw}       || die "no KRpw defined in environment";
+    }
 
-    # We could use resolver options for username/password?
-    my $dbh = DBI->connect("dbi:mysql:$name", %auth,
+    my $dbms = $ENV{KRdbms} || "mysql";
+    my $dbh = DBI->connect("dbi:$dbms:$name", $user, $pw,
 			   { RaiseError => 1, AutoCommit => 1 });
 
     return bless {

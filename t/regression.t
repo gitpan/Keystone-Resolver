@@ -1,4 +1,4 @@
-# $Id: regression.t,v 1.1 2007-01-26 12:31:59 mike Exp $
+# $Id: regression.t,v 1.2 2007-12-11 16:59:57 mike Exp $
 
 use strict;
 use Test;
@@ -33,6 +33,9 @@ BEGIN {
 };
 use Keystone::Resolver::Test;
 ok(1); # If we made it this far, we're ok.
+
+$ENV{KRuser} = "kr_read";
+$ENV{KRpw} = "kr_read_3636";
 
 foreach my $test (@tests) {
     my $status = Keystone::Resolver::Test::run_test({ xml => 1, nowarn => 1 },

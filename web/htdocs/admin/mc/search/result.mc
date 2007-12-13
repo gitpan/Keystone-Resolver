@@ -1,4 +1,4 @@
-%# $Id: result.mc,v 1.8 2007-07-04 14:38:01 mike Exp $
+%# $Id: result.mc,v 1.9 2007-12-12 15:16:33 marc Exp $
 <%args>
 $_class
 $rs
@@ -15,7 +15,7 @@ if (!defined $last) {
 }
 my $fullclass = "Keystone::Resolver::DB::$_class";
 my @df = $fullclass->display_fields();
-my $baseURL = "/admin/search.html?_class=$_class&_query=" .
+my $baseURL = "./search.html?_class=$_class&_query=" .
     uri_escape_utf8(encode_hash(%{ $rs->query() }));
 </%perl>
      <p></p>

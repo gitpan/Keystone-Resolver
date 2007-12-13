@@ -1,4 +1,4 @@
-%# $Id: submitted.mc,v 1.6 2007-07-13 10:56:36 mike Exp $
+%# $Id: submitted.mc,v 1.7 2007-12-12 15:16:33 marc Exp $
 <%args>
 $_class
 $_query => undef
@@ -34,7 +34,7 @@ if ($n > 0) {
        <b>Sorry, no <% $_class %> matches your criteria.</b>
       </p>
       <p>
-       Please <a href="/admin/search.html?_class=<% $_class %>">try again</a>.
+       Please <a href="./search.html?_class=<% $_class %>">try again</a>.
       </p>
 % $m->comp("/mc/newlink.mc", _class => $_class);
 % }

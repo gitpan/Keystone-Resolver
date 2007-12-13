@@ -1,4 +1,4 @@
-%# $Id: shortrecord.mc,v 1.2 2007-09-12 13:08:33 mike Exp $
+%# $Id: shortrecord.mc,v 1.3 2007-12-12 15:16:33 marc Exp $
 <%args>
 $record
 </%args>
@@ -15,7 +15,7 @@ my $user = $m->comp("/mc/utils/user.mc", require => 0);
 if (defined $user && $user->admin() > 0) {
     my $linkclass = $record->class();
     my $linkid = $record->id();
-    my $url = "/admin/edit.html?_class=$linkclass&amp;id=$linkid";
+    my $url = "./edit.html?_class=$linkclass&amp;id=$linkid";
     print qq[     <td class="td-admin"><a href="$url">Edit</a></td>\n];
 }
 print "       </tr>\n";

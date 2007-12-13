@@ -1,4 +1,4 @@
-%# $Id: edit.mc,v 1.16 2007-09-12 23:41:30 mike Exp $
+%# $Id: edit.mc,v 1.17 2007-12-13 17:05:05 mike Exp $
 <%args>
 $_class
 $id => undef
@@ -33,6 +33,7 @@ if (defined $id && $id ne "") {
     my $fullclass = "Keystone::Resolver::DB::$_class";
     if (defined $_update) {
 	$record = $fullclass->create($db, %data);
+	$id = $record->id();
     } else {
 	$record = $fullclass->new($db)
     }
@@ -58,6 +59,7 @@ while (@df) {
     <tr>
      <td colspan="2" style="text-align: right">
       <input type="hidden" name="_class" value="<% $_class %>"/>
+      <input type="hidden" name="id" value="<% $id %>"/>
       <input type="submit" name="_update" value="Update"/>
      </td>
     </tr>

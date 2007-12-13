@@ -128,6 +128,7 @@ rft.dclanguage,en,1,amazon-de
 2,dbc,DBC,lightblue,mike@indexdata.com
 3,talis,Talis,pink,mike@indexdata.com
 4,resolver,Local Resolver,lightyellow,mike@indexdata.com
+5,localhost,Localhost Resolver,white,mike@indexdata.com
 
 *user=id,site_id,admin,name,email_address,password
 1,1,2,Mike Taylor,mike@indexdata.com,fish

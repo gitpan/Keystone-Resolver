@@ -1,4 +1,4 @@
-# $Id: Object.pm,v 1.26 2007-09-20 17:47:02 mike Exp $
+# $Id: Object.pm,v 1.27 2007-12-13 17:12:03 mike Exp $
 
 package Keystone::Resolver::DB::Object;
 
@@ -47,26 +47,48 @@ sub field_map { {} }
 
 # Returns a list of all the field specified by fields(), with types
 # drawn from fulldisplay_fields() where available and using "t" when
-# not.  Omits only those fields which are used as the link-field in a
-# virtual-field recipe (e.g. omit service_type_id from the Service
-# class, because it is the link-field in the service_type recipe).
+# not.
+#
+# Fields which are used as the link-field in a virtual-field recipe
+# not of the "dependent-link" type are omitted (e.g. service_type_id
+# from the Service class, because it is the link-field in the
+# service_type recipe).
+#
+# Virtual fields that are of not of the "dependent-link" type have a
+# exclude-at-creation-time attribute prepended to their type, if they
+# don't already have it.
 #
 sub editable_fields {
     my $class = shift();
 
     my @allfields = $class->fields();
     my %hash = @allfields;
-    my %recipesByLinkfield = map { ($_->[0], $_) } 
-	grep { defined && ref } values %hash;
+    my(%linkFields, %virtualFields);
+    foreach my $key (keys %hash) {
+	my $value = $hash{$key};
+	if (defined $value && ref $value && @$value > 3) {
+	    $virtualFields{$key} = 1;
+	    $linkFields{$value->[0]} = 1;
+	}
+    }
+
     my %fdfields = $class->fulldisplay_fields();
     my @res;
 
     while (@allfields) {
 	my $name = shift @allfields;
 	my $recipe = shift @allfields;
-	next if defined $recipesByLinkfield{$name};
+	if (defined $linkFields{$name}) {
+	    warn "omitting '$name' from editable_field($class)\n";
+	    next;
+	}
 
 	my $display = $fdfields{$name} || "t";
+	if (defined $virtualFields{$name}) {
+	    $display = "X$display" if $display !~ /X/;
+	    warn "made '$name' readonly '$display' in editable_field($class)\n";
+	}
+
 	push @res, ($name, $display);
     }
 
@@ -105,7 +127,15 @@ sub virtual_fields {
 
 
 # Parses full-type strings such as those used on the RHS of
-# display_fields() arrays, e.g. "c", "Lt", "Rn".
+# display_fields() arrays, e.g. "c", "Lt", "Rn".  Returns an array of
+# four elements:
+#	0: whether the field is a link
+#	1: whether the field is readonly
+#	2: the field's core type
+#	3: whether the field should be excluded at creation time.
+# (It would make more sense if 2 and 3 were reversed, but existing
+# code assumes the first three elements from before the fourth was
+# added.)
 #
 sub analyse_type {
     my $_unused_this = shift();
@@ -114,10 +144,11 @@ sub analyse_type {
     return (undef, undef, $type) if ref $type;
     my $link = ($type =~ s/L//);
     my $readonly = ($type =~ s/R//);
+    my $exclude = ($type =~ s/X//);
     # Special-case the fields that we know may never change
     $readonly = 1 if grep { $field eq $_ } qw(id tag);
 
-    return ($link, $readonly, $type);
+    return ($link, $readonly, $type, $exclude);
 }
 
 
@@ -263,7 +294,7 @@ sub virtual_field {
     if (defined $sortby) {
 	# Link is to multiple records
 	my @obj = $this->db()->find($class, $sortby, $linkto, $value);
-	warn "$this->virtual_fields($fieldname) -> @obj";
+	#warn "$this->virtual_fields($fieldname) -> @obj";
 	return [ @obj ];
     }
 

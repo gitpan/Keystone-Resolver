@@ -1,4 +1,4 @@
-# $Id: Admin.pm,v 1.5 2007-09-05 10:37:59 mike Exp $
+# $Id: Admin.pm,v 1.8 2007-12-13 17:09:03 mike Exp $
 
 # This is the only module that needs to be explicitly "use"d by the
 # HTML::Mason components that make up the sites.  It is responsible,
@@ -37,8 +37,9 @@ sub resolver {
     my $this = shift();
 
     if (!defined $this->{resolver}) {
+	### This should be a setting
 	my $loglevel = (
-			Keystone::Resolver::LogLevel::CHITCHAT |
+#			Keystone::Resolver::LogLevel::CHITCHAT |
 			Keystone::Resolver::LogLevel::CACHECHECK |
 			Keystone::Resolver::LogLevel::PARSEXSLT |
 			Keystone::Resolver::LogLevel::DUMPDESCRIPTORS |
@@ -81,7 +82,8 @@ sub hostname2tag {
     my $tag;
     if ($hostname eq "resolver.indexdata.com") {
 	$tag = "id";
-    } else {
+    } 
+    else {
 	$tag = $hostname;
 	$tag =~ s/\..*//;
     }

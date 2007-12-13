@@ -1,4 +1,4 @@
-%# $Id: remind.mc,v 1.3 2007-06-26 10:56:59 mike Exp $
+%# $Id: remind.mc,v 1.4 2007-12-12 15:16:33 marc Exp $
 <%args>
 $email_address
 </%args>
@@ -13,7 +13,7 @@ if (!defined $user) {
       </p>
       <p>
        Please go back and
-       <a href="/admin/login.html?email_address=<%
+       <a href="./login.html?email_address=<%
 	uri_escape_utf8($email_address) %>">register</a>.
       </p>
      </div>
@@ -28,7 +28,7 @@ if (!defined $user) {
       </p>
       <p>
        Please check your email and return to
-       <a href="/admin/login.html?email_address=<%
+       <a href="./login.html?email_address=<%
 	uri_escape_utf8($email_address) %>">the login page</a>
       </p>
 % }

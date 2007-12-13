@@ -1,4 +1,4 @@
-# $Id: Resolver.pm,v 1.14 2007-12-03 09:45:58 mike Exp $
+# $Id: Resolver.pm,v 1.21 2007-12-13 17:12:51 mike Exp $
 
 package Keystone::Resolver;
 
@@ -13,8 +13,7 @@ use Keystone::Resolver::Descriptor;
 use Keystone::Resolver::Database;
 use Keystone::Resolver::ResultSet;
 
-
-our $VERSION = '1.09';
+our $VERSION = '1.10';
 
 
 =head1 NAME
@@ -54,18 +53,6 @@ One option is special to this constructor: if C<_rw> is provided and
 true, then the database is opened readwrite rather then readonly
 (which is the default).
 
-When running under Apache, the Apache request object C<$r> is
-consulted to obtain host-specific configuration information such as
-the C<KRxsltdir> setting from the web-server configuration.  When this
-is not available (e.g. because the resolver is being run from the
-command-line) then default values are used for such configuration
-settings.  This can in general be overridden by individual options,
-e.g. C<xsltdir> in the case of the C<KRxsltdir> setting.
-
-I<### It might be better if Keystone Resolver had an
-application-specific configuration file which is not dependent on
-Apache.>
-
 The resolver object accumulates some state as it goes along, so it
 is generally more efficient to keep using a single resolver than to
 make new one every time you need to resolve an OpenURL.
@@ -77,17 +64,7 @@ sub new {
     my(%options) = @_;
 
     my $rw = delete $options{_rw};
-
-    my $r;
-    eval {
-	use Apache;
-	$r = Apache->request();
-	# This will fail when not running under mod_perl; fine.
-    };
-
-    my $xsltdir;
-    $xsltdir = $r->dir_config("KRxsltdir") if defined $r;
-    $xsltdir = "/usr/local/src/cvs/resolver/etc/xslt" if !defined $xsltdir;
+    my $xsltdir = $ENV{KRxsltdir} || "../etc/xslt";
     my $this = bless {
 	parser => undef,	# set when needed in parser()
 	xslt => undef,		# set when needed in xslt()
@@ -339,15 +316,17 @@ sub db {
     my $this = shift();
     my($name) = @_;
 
-    ### This is a hack.  We can do better
-    if (!defined $name) {
-	my $sn = $ENV{SCRIPT_NAME} || "/resolve";
-	if ($sn =~ s@.*/resolve@@) {
-	    $name = "kr$sn";
-	} else {
-	    $name = "kr";
-	}
-    }
+    $name ||= "kr";
+
+#    ### This is a hack.  We can do better
+#    if (!defined $name) {
+#	my $sn = $ENV{SCRIPT_NAME} || "/resolve";
+#	if ($sn =~ s@.*/resolve@@) {
+#	    $name = "kr$sn";
+#	} else {
+#	    $name = "kr";
+#	}
+#    }
 
     my $cache = $this->{db};
     if (!defined $cache->{$name}) {
