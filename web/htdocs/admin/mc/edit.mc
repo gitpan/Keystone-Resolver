@@ -1,4 +1,4 @@
-%# $Id: edit.mc,v 1.17 2007-12-13 17:05:05 mike Exp $
+%# $Id: edit.mc,v 1.18 2007-12-17 11:43:54 mike Exp $
 <%args>
 $_class
 $id => undef
@@ -45,9 +45,11 @@ if (defined $id && $id ne "") {
    <table class="center">
 <%perl>
 my @df = $record->editable_fields();
+my $idField = 0;
 while (@df) {
     my $field = shift @df;
     my $fulltype = shift @df;
+    $idField++ if $field eq "id";
 </%perl>
     <tr>
      <th><% encode_entities($record->label($field)) %></th>
@@ -59,7 +61,9 @@ while (@df) {
     <tr>
      <td colspan="2" style="text-align: right">
       <input type="hidden" name="_class" value="<% $_class %>"/>
+% if ($idField == 0) {
       <input type="hidden" name="id" value="<% $id %>"/>
+% }
       <input type="submit" name="_update" value="Update"/>
      </td>
     </tr>

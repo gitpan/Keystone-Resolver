@@ -1,6 +1,10 @@
-$Id: Changes,v 1.38 2007-12-13 17:27:01 mike Exp $
+$Id: Changes,v 1.40 2007-12-17 11:57:10 mike Exp $
 
 Revision history for Perl extension Keystone::Resolver.
+
+1.11  Mon Dec 17 11:57:16 GMT 2007
+	- Fix bug #1967, which prevented the creation of certain types
+	  of record, including Service and User.
 
 1.10  Thu Dec 13 17:27:15 GMT 2007
 	- Hardwired username/password pairs for read-only and
