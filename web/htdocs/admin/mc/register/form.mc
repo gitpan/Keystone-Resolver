@@ -1,7 +1,7 @@
-%# $Id: form.mc,v 1.2 2007-06-21 14:19:09 mike Exp $
+%# $Id: form.mc,v 1.2.2.1 2008-01-17 13:02:28 mike Exp $
 <%perl>
 my @params = (obj => "Keystone::Resolver::DB::User",
-	      submitted => defined($r->param("register")));
+	      submitted => defined(utf8param($r, "register")));
 my $p1 = utf8param($r, "password1");
 my $p2 = utf8param($r, "password2");
 </%perl>

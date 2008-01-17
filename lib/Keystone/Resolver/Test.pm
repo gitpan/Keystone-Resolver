@@ -1,4 +1,4 @@
-# $Id: Test.pm,v 1.1 2007-01-26 12:33:15 mike Exp $
+# $Id: Test.pm,v 1.1.2.1 2008-01-10 16:38:31 mike Exp $
 
 package Keystone::Resolver::Test;
 
@@ -109,10 +109,7 @@ sub _do_test {
     my $cgi = new CGI($params);
     my $openURL = Keystone::Resolver::OpenURL->newFromCGI($cgi, undef,
 	{ baseURL => "http://example.com/resolve", %$optsref });
-    my $result = $openURL->resolve();
-    if ($result !~ s/.*?\n\r*\n//s) {
-	return fail(4, $quiet, $filename, "can't discard HTTP header");
-    }
+    my($__UNUSED_type, $result) = $openURL->resolve();
 
     if ($result !~ /\n$/s) {
 	# Diff has problems dealing with files that don't end in

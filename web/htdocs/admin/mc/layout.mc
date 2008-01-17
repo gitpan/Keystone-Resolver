@@ -1,4 +1,4 @@
-%# $Id: layout.mc,v 1.19 2007-12-13 17:08:12 mike Exp $
+%# $Id: layout.mc,v 1.19.2.2 2008-01-17 15:43:00 mike Exp $
 <%args>
 $debug => undef
 $title
@@ -8,7 +8,6 @@ $component
 use Encode;
 use URI::Escape qw(uri_escape_utf8 uri_unescape);
 use HTML::Entities;
-use Apache::Cookie;
 use Keystone::Resolver::Admin;
 use Keystone::Resolver::Utils qw(encode_hash decode_hash utf8param);
 </%once>
@@ -21,8 +20,26 @@ my $site = $admin->site($tag);
 die "unknown Keystone Resolver site '$tag' (host $host)" if !defined $site;
 $m->notes(site => $site);
 
-my $cookies = Apache::Cookie->fetch();
+# Totally chiropteral-excrementally crazy ... you have to use a
+# different cookie API depending on whether you're running under
+# Apache 1.x or 2.x.  And the fetch() and bake() methods in Apache 2
+# have different parameters from the same methods in Apache 1.
+# Thanks, Apache guys!  I'm sure you know best!
+#
+my $cookiePackage;
+my $api = $ENV{MOD_PERL_API_VERSION};
+if ($api && $api == 2) {
+    $cookiePackage = "Apache2::Cookie";
+} else {
+    $cookiePackage = "Apache::Cookie";
+}
+my $cookieModule = $cookiePackage;
+$cookieModule =~ s/::/\//g;
+require "$cookieModule.pm";
+my $cookies = $cookiePackage->fetch($cookiePackage eq 'Apache2::Cookie' ? $r : ());
 my $cookie = $cookies->{session};
+#warn "cookieModule=[$cookieModule], cookies=[$cookies], cookie=[$cookie]";
+
 my $session = undef;
 my $user = undef;
 
@@ -34,17 +51,17 @@ if (defined $cookie) {
 	# delete the cookie, silently logging the user out if he was
 	# logged in.
 	$site->log(1, "expiring old session $cval");
-	my $cookie = new Apache::Cookie($r, -name => "session",
+	my $cookie = new $cookiePackage($r, -name => "session",
 					-value => $cval, -expires => '-1d');
-	$cookie->bake();
+	$cookie->bake($cookiePackage eq 'Apache2::Cookie' ? $r : ());
     }
 }
 
 if (!defined $session) {
     $session = $site->create_session();
-    my $cookie = new Apache::Cookie($r, -name => "session",
+    my $cookie = new $cookiePackage($r, -name => "session",
 				    -value => $session->cookie());
-    $cookie->bake();
+    $cookie->bake($cookiePackage eq 'Apache2::Cookie' ? $r : ());
 }
 $m->notes(session => $session);
 

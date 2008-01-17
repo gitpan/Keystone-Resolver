@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: resolve,v 1.2 2007-05-24 16:16:57 mike Exp $
+# $Id: resolve,v 1.2.2.4 2008-01-11 17:53:16 mike Exp $
 #
 # This is the front end for Keystone Resolver when invoked either as
 # an OpenURL 0.1 resolver, or as a Z39.88 (OpenURL 1.0) resolver using
@@ -20,6 +20,8 @@ use warnings;
 use CGI;
 use Keystone::Resolver;
 
+Keystone::Resolver::Utils::apache_non_moronic_logging();
+
 my $cgi = new CGI();
 if (0) {
     ### Temporary measure.  We will want better logging down the line.
@@ -35,5 +37,15 @@ binmode STDOUT, ":utf8"; # For proper output
 binmode STDERR, ":utf8"; # For any temporary debugging output
 my $referer = $ENV{HTTP_REFERER} || "http://made.up.referrer/foo";
 my $openURL = Keystone::Resolver::OpenURL->newFromCGI($cgi, $referer);
-eval { print $openURL->resolve() };
-print "Content-type: text/plain\r\n\r\nUh-oh!\n$@" if $@;
+
+my($type, $content);
+eval {
+    ($type, $content) = $openURL->resolve();
+}; if ($@) {
+    print "Uh-oh!\n$@";
+    exit;
+}
+
+my $r = Keystone::Resolver::Utils::apache_request($cgi);
+$r->content_type($type);
+print $content;

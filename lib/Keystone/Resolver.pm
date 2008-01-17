@@ -1,4 +1,4 @@
-# $Id: Resolver.pm,v 1.22 2007-12-17 11:46:17 mike Exp $
+# $Id: Resolver.pm,v 1.22.2.2 2008-01-10 16:41:09 mike Exp $
 
 package Keystone::Resolver;
 
@@ -13,7 +13,7 @@ use Keystone::Resolver::Descriptor;
 use Keystone::Resolver::Database;
 use Keystone::Resolver::ResultSet;
 
-our $VERSION = '1.11';
+our $VERSION = '1.12';
 
 
 =head1 NAME
@@ -25,7 +25,8 @@ Keystone::Resolver - an OpenURL resolver
  use Keystone::Resolver;
  $resolver = new Keystone::Resolver();
  $openURL = $resolver->openURL($args, $base, $referer);
- print $openURL->resolve();
+ ($type, $content) = $openURL->resolve();
+ print "Content-type: $type\r\n\r\n$content";
 
 =head1 DESCRIPTION
 

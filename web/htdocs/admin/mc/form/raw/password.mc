@@ -1,4 +1,4 @@
-%# $Id: password.mc,v 1.2 2007-06-21 14:19:09 mike Exp $
+%# $Id: password.mc,v 1.2.2.1 2008-01-17 12:49:21 mike Exp $
 <%args>
 $name
 $size => 40
@@ -8,4 +8,5 @@ $maxlength => undef
 % if (defined $maxlength) {
 		maxlength="<% $maxlength %>"
 % }
-		value="<% defined $r->param($name) ? utf8param($r, $name) : "" %>"/>
+% my $val = utf8param($r, $name);
+		value="<% defined $val ? $val : "" %>"/>

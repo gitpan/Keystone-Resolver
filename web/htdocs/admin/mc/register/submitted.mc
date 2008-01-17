@@ -1,8 +1,8 @@
-%# $Id: submitted.mc,v 1.3 2007-06-26 10:56:59 mike Exp $
+%# $Id: submitted.mc,v 1.3.2.1 2008-01-17 13:02:29 mike Exp $
 % my $site = $m->notes("site");
 <%perl>
 my %data;
-foreach my $key ($r->param()) {
+foreach my $key (utf8param($r)) {
     $data{$key} = utf8param($r, $key);
 }
 

@@ -1,4 +1,4 @@
-# $Id: OpenURL.pm,v 1.16 2007-09-20 17:49:03 mike Exp $
+# $Id: OpenURL.pm,v 1.16.2.1 2008-01-10 13:19:24 mike Exp $
 
 package Keystone::Resolver::OpenURL;
 
@@ -25,6 +25,8 @@ Keystone::Resolver::OpenURL - an OpenURL that can be resolved
  @results = $openURL->resolve_to_results();
  $xml = $openURL->resolve_to_xml();
  $html = $openURL->resolve_to_html($stylesheetName);
+ ($type, $content) = $openURL->resolve();
+
  print $openURL->resolve();
 
 =head1 DESCRIPTION
@@ -928,11 +930,11 @@ sub resolve_to_html {
 
 =item resolve()
 
-Returns an entire HTTP response, including C<Content-type> and
-C<Content-length> headers.  The response is XML, as returned from
-C<resolve_to_xml()>, if the C<xml> option is set and
-non-zero; or HTML otherwise, as returned from C<resolve_to_html()>,
-otherwise.
+Returns an array of two elements from which an entire HTTP response
+can be built: the C<Content-type> and the actual content.  The
+response is XML, as returned from C<resolve_to_xml()>, if the C<xml>
+option is set and non-zero; or HTML otherwise, as returned from
+C<resolve_to_html()>, otherwise.
 
 =back
 
@@ -948,16 +950,13 @@ sub resolve {
 	# HTML document.
 	my $mimeType = $res[0]->mimeType();
 	$mimeType = "text/plain" if !defined $mimeType;
-	return ("Content-type: $mimeType\r\n\r\n" .
-		$res[0]->text());
+	return ($mimeType, $res[0]->text());
     }
 
     if ($this->option("xml")) {
-	return ("Content-type: text/xml\r\n\r\n" .
-		$this->resolve_to_xml());
+	return ("text/xml", $this->resolve_to_xml());
     } else {
-	return ("Content-type: text/html; charset=UTF-8\r\n\r\n" .
-		$this->resolve_to_html());
+	return ("text/html; charset=UTF-8", $this->resolve_to_html());
     }
 }
 

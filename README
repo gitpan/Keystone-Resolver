@@ -1,4 +1,4 @@
-$Id: README,v 1.9 2007-12-14 08:42:13 marc Exp $
+$Id: README,v 1.10.2.1 2008-01-11 11:46:18 mike Exp $
 
 
 Introduction
@@ -122,6 +122,9 @@ Oracle Debian packages
 
 http://www.oracle.com/technology/software/products/database/xe/htdocs/102xelinsoft.html
 
+APT source line:
+ deb http://oss.oracle.com/debian unstable main non-free
+
 
 
 -> The Perl module LWP
@@ -242,18 +245,4 @@ discussed in detail at
 	http://www.gnu.org/copyleft/gpl.html
 
 The primary author is Mike Taylor <mike@indexdata.com>
-
---
-
-### The following files get created within "src" but not removed by
-"make distclean", and so will be included in a Debian source-package
-(libkeystone-resolver-perl_1.07-1.tar.gz).  I'm not sure what to do
-about that.
-
-	db/data.ok
-	db/db.ok
-	db/simple.d2m
-	db/simple.mysql
-	db/tables.ok
-	web/data
 

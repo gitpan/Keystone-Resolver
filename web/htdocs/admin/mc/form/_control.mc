@@ -1,4 +1,4 @@
-%# $Id: _control.mc,v 1.3 2007-06-21 14:19:09 mike Exp $
+%# $Id: _control.mc,v 1.3.2.1 2008-01-17 12:49:20 mike Exp $
 <%args>
 $which
 $obj => undef
@@ -29,8 +29,8 @@ $mandatory = grep { $_ eq $name } $obj->mandatory_fields()
 	<td>
 % $m->comp("/mc/form/raw/$which.mc", %ARGS);
 	 <% $suffix %>
-% if ($submitted && $mandatory && (!defined $r->param($name) ||
-%				   utf8param($r, $name) =~ /^\s*$/)) {
+% my $val = utf8param($r, $name);
+% if ($submitted && $mandatory && (!defined $val || $val =~ /^\s*$/)) {
 	 <br/><span class="error">Please fill this field in!</span>
 % }
 % if (defined $caption) {

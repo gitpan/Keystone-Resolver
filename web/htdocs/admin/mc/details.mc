@@ -1,15 +1,15 @@
-%# $Id: details.mc,v 1.5 2007-06-21 14:19:09 mike Exp $
+%# $Id: details.mc,v 1.5.2.1 2008-01-17 12:49:20 mike Exp $
 % my $user = $m->comp("/mc/utils/user.mc", require => 1) or return;
 <%perl>
 my $status = 0;
 my $complete = 1;
 foreach my $fieldname (qw(name email_address)) {
-    $complete = 0 if !$r->param($fieldname);
+    $complete = 0 if !utf8param($r, $fieldname);
 }
 
-if (defined $r->param("update") && $complete) {
+if (defined utf8param($r, "update") && $complete) {
     my %data;
-    foreach my $key (grep { $_ ne "update" } $r->param()) {
+    foreach my $key (grep { $_ ne "update" } utf8param($r)) {
 	$data{$key} = utf8param($r, $key);
     }
     $user->update(%data);
@@ -18,8 +18,8 @@ if (defined $r->param("update") && $complete) {
 
 # For fields not specified in CGI parameters, fill in from DB
 foreach my $fieldname (qw(name email_address)) {
-    if (!defined $r->param($fieldname)) {
-	$r->param($fieldname, encode_utf8($user->field($fieldname)));
+    if (!defined utf8param($r, $fieldname)) {
+	utf8param($r, $fieldname, encode_utf8($user->field($fieldname)));
     }
 }
 </%perl>
@@ -32,7 +32,7 @@ foreach my $fieldname (qw(name email_address)) {
 % }
       </p>
       <table>
-% my @params = (obj => $user, submitted => (defined $r->param("update")));
+% my @params = (obj => $user, submitted => (defined utf8param($r, "update")));
 <& /mc/form/textbox.mc, @params, name => "name" &>
 <& /mc/form/textbox.mc, @params, name => "email_address" &>
        <tr>

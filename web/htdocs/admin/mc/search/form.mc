@@ -1,4 +1,4 @@
-%# $Id: form.mc,v 1.6 2007-07-13 10:56:19 mike Exp $
+%# $Id: form.mc,v 1.6.2.1 2008-01-17 12:49:21 mike Exp $
 % my $site = $m->notes("site");
 <%args>
 $_class
@@ -6,7 +6,7 @@ $_class
 <%perl>
 my $fullclass = "Keystone::Resolver::DB::$_class";
 my @fields = $fullclass->search_fields();
-my @params = (submitted => (defined $r->param("_submit")));
+my @params = (submitted => (defined utf8param($r, "_submit")));
 </%perl>
      <form method="get" action="">
       <p>

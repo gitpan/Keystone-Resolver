@@ -1,4 +1,4 @@
-%# $Id: submitted.mc,v 1.7 2007-12-12 15:16:33 marc Exp $
+%# $Id: submitted.mc,v 1.7.2.1 2008-01-17 12:49:22 mike Exp $
 <%args>
 $_class
 $_query => undef
@@ -14,7 +14,7 @@ if (defined $_query) {
     %query = decode_hash(decode_utf8(uri_unescape($_query)));
     $query{_sort} = $_sort;
 } else {
-    %query = map { $_ => utf8param($r, $_) } $r->param();
+    %query = map { $_ => utf8param($r, $_) } utf8param($r);
 }
 my($rs, $errmsg) = $site->search("Keystone::Resolver::DB::$_class", %query);
 if (!defined $rs) {

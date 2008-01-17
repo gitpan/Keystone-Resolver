@@ -1,4 +1,4 @@
-%# $Id: edit.mc,v 1.18 2007-12-17 11:43:54 mike Exp $
+%# $Id: edit.mc,v 1.18.2.1 2008-01-17 12:49:20 mike Exp $
 <%args>
 $_class
 $id => undef
@@ -11,7 +11,7 @@ if ($user->admin() == 0) {
 }
 
 ### Should require $record->mandatory_fields()
-my %data = map { $_ => utf8param($r, $_) } grep { !/^_/ } $r->param();
+my %data = map { $_ => utf8param($r, $_) } grep { !/^_/ } utf8param($r);
 delete $data{id};
 my $db = $m->notes("site")->db();
 my $record;

@@ -1,4 +1,4 @@
-# $Id: MANIFEST,v 1.20 2007-11-28 10:57:48 mike Exp $
+# $Id: MANIFEST,v 1.20.2.1 2008-01-17 15:49:22 mike Exp $
 
 Changes
 GPL-2
@@ -7,6 +7,7 @@ MANIFEST.SKIP
 META.yml                                 Module meta-data (added by MakeMaker)
 Makefile.PL
 README
+README.apache2-mod_perl
 bin/kr-recipe
 bin/kr-resolve
 bin/kr-test
@@ -162,6 +163,7 @@ web/conf/apache1.3/kafta-proxy.conf
 web/conf/apache1.3/kafta.conf
 web/conf/apache1.3/shawarma.conf
 web/conf/apache1.3/xeno.conf
+web/conf/apache2.0/development.conf
 web/conf/apache2.0/reindex.conf
 web/htdocs/admin/details.html
 web/htdocs/admin/edit.html

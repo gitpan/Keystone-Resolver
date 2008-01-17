@@ -1,4 +1,4 @@
-# $Id: Database.pm,v 1.17 2007-12-11 17:36:58 mike Exp $
+# $Id: Database.pm,v 1.18 2007-12-19 17:02:21 mike Exp $
 
 package Keystone::Resolver::Database;
 
@@ -283,7 +283,7 @@ sub _objectFromDB {
     my @data = $this->_find1values($fields, $table, @conds);
     if (@data == 0) {
 	return undef if $allowNoMatch;
-	die("_objectFromDB($type): no match for " . $this->condstr(@conds));
+	die("_objectFromDB($type): no match for " . $this->_condstr(@conds));
     }
 
     return "Keystone::Resolver::DB::$type"->new($this, @data);

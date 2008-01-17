@@ -1,4 +1,4 @@
-%# $Id: form.mc,v 1.3 2007-12-12 15:16:33 marc Exp $
+%# $Id: form.mc,v 1.3.2.1 2008-01-17 12:49:21 mike Exp $
 <%args>
 $submitted
 </%args>
@@ -12,11 +12,11 @@ $submitted
       <table>
 <& /mc/form/textbox.mc, @params,
 	name => "email_address", label => "Email&nbsp;address" &>
-<& /mc/form/error.mc, @params, cond => !($r->param("email_address")),
+<& /mc/form/error.mc, @params, cond => !(utf8param($r, "email_address")),
 	msg => "Please enter your email address!" &>
 <& /mc/form/password.mc, @params,
 	name => "password", label => "Password" &>
-<& /mc/form/error.mc, @params, cond => !($r->param("password")),
+<& /mc/form/error.mc, @params, cond => !(utf8param($r, "password")),
 	msg => "Please enter your password!" &>
        <tr>
         <td></td>
