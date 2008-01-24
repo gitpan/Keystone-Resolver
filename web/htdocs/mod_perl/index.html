@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: index.html,v 1.6.2.2 2008-01-11 13:38:22 mike Exp $
+# $Id: index.html,v 1.6.2.4 2008-01-24 18:04:26 mike Exp $
 
 my $host = $ENV{'HTTP_HOST'};
 ### or maybe one of the following which all seem correctly set:
@@ -14,6 +14,7 @@ $uri =~ s/(.*)\/.*/$1/;
 use Keystone::Resolver::Utils qw(mod_perl_version);
 my $ver = mod_perl_version();
 my $sw = $ver ? "<tt>mod_perl</tt> version $ver" : "CGI, most likely";
+my $host = `hostname`;
 
 print <<__EOT__;
 <html>
@@ -23,8 +24,8 @@ print <<__EOT__;
  <body>
   <p>
    This is an installation of
-   <b>Keystone Resolver</b>
-   running under $sw.
+   <b>Keystone Resolver</b><br/>
+   running under $sw on <tt>$host</tt>
   </p>
   <p>
   Use
