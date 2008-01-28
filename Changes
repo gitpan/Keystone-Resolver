@@ -1,6 +1,14 @@
-$Id: Changes,v 1.40.2.6 2008-01-28 10:48:31 mike Exp $
+$Id: Changes,v 1.40.2.8 2008-01-28 12:26:41 mike Exp $
 
 Revision history for Perl extension Keystone::Resolver.
+
+1.15  Mon Jan 28 12:26:37 GMT 2008
+	- Fix error in Apache2 debian-package configuration file:
+	  mod_rewrite's log was written into /var/log/apache rather
+	  than /var/log/apache2, which causes Apache2 to refuse to
+	  start if Apache 1.x is not also installed.
+	- Comments in Makefile.PL indicate what Debian packages
+	  contain each of the prerequisite Perl modules.
 
 1.14  Mon Jan 28 10:49:04 GMT 2008
 	- Fix the resolver-site's index page to correctly state the

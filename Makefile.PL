@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.17 2007-12-11 12:29:52 mike Exp $
+# $Id: Makefile.PL,v 1.17.2.1 2008-01-28 12:26:30 mike Exp $
 
 use 5.008;
 use ExtUtils::MakeMaker;
@@ -12,15 +12,21 @@ WriteMakefile(
 	# those that I happen to have on the staging box (Debian 3.1),
 	# and which are therefore the oldest versions that I _know_
 	# work.  There is every chance that older versions will work
-	# just fine, though.
+	# just fine, though.  Comments indicate the names of Debian
+	# packages containing the required modules.
 	CGI => 3.04,
-	DBI => 1.46,
-	LWP => 5.803,
-	XML::LibXSLT => 1.57,
+	DBI => 1.46, # libdbi-perl
+	LWP => 5.803, # libwww-perl
+	XML::LibXSLT => 1.57, # libxml-libxslt-perl
 	Text::Iconv => 1.2,
 	Digest::MD5 => 2.33,
-	HTML::Entities => 1.32,
+	HTML::Entities => 1.32, # libhtml-parser-perl
 	Apache => 1.27,
+	# You also need a database driver such as DBD::mysql
+	# [libdbd-mysql-perl].  And if you need to make a local
+	# resource database, you'll need a server such as
+	# /usr/sbin/mysqld [mysql-server] and a command-line
+	# client such as /usr/bin/mysql [mysql-client]
     },
     EXE_FILES    => [ 'bin/kr-recipe', 'bin/kr-test' ],
     clean => { FILES => "build-stamp install-stamp t/regression/passed " .
