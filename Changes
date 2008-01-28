@@ -1,6 +1,10 @@
-$Id: Changes,v 1.40.2.5 2008-01-24 18:07:22 mike Exp $
+$Id: Changes,v 1.40.2.6 2008-01-28 10:48:31 mike Exp $
 
 Revision history for Perl extension Keystone::Resolver.
+
+1.14  Mon Jan 28 10:49:04 GMT 2008
+	- Fix the resolver-site's index page to correctly state the
+	  baseURL.  (No functional changes.)
 
 1.13  Thu Jan 24 18:07:56 GMT 2008
 	- Small changes to Web configuration to allow Apache 1.x and

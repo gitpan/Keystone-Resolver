@@ -1,4 +1,4 @@
-# $Id: Resolver.pm,v 1.22.2.3 2008-01-24 18:07:14 mike Exp $
+# $Id: Resolver.pm,v 1.22.2.4 2008-01-28 10:47:53 mike Exp $
 
 package Keystone::Resolver;
 
@@ -13,7 +13,7 @@ use Keystone::Resolver::Descriptor;
 use Keystone::Resolver::Database;
 use Keystone::Resolver::ResultSet;
 
-our $VERSION = '1.13';
+our $VERSION = '1.14';
 
 
 =head1 NAME
