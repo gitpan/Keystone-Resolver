@@ -1,7 +1,8 @@
-# $Id: MANIFEST.SKIP,v 1.8 2007-11-28 10:57:34 mike Exp $
+# $Id: MANIFEST.SKIP,v 1.9 2008-01-30 14:19:17 mike Exp $
 
 .cvsignore
 CVS
+README.Oracle
 archive
 bin/make_admin_user
 build-stamp

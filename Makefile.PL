@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.17.2.1 2008-01-28 12:26:30 mike Exp $
+# $Id: Makefile.PL,v 1.20 2008-02-04 18:03:17 mike Exp $
 
 use 5.008;
 use ExtUtils::MakeMaker;
@@ -21,7 +21,7 @@ WriteMakefile(
 	Text::Iconv => 1.2,
 	Digest::MD5 => 2.33,
 	HTML::Entities => 1.32, # libhtml-parser-perl
-	Apache => 1.27,
+	# You also need a web server such as Apache 1.3.x or 2.0.x.
 	# You also need a database driver such as DBD::mysql
 	# [libdbd-mysql-perl].  And if you need to make a local
 	# resource database, you'll need a server such as
@@ -32,9 +32,6 @@ WriteMakefile(
     clean => { FILES => "build-stamp install-stamp t/regression/passed " .
 			"debian/files " .
 			"debian/keystone-resolver " .
-			"debian/keystone-resolver-webui " .
-			"debian/keystone-resolver-db " .
-			"debian/keystone-resolver-db.substvars " .
 			"debian/libkeystone-resolver-perl " .
 			"debian/libkeystone-resolver-perl.substvars " .
 			"debian/output" },
@@ -60,7 +57,7 @@ debinstall: debian/output
 	sudo dpkg -i debian/output/*.deb
 
 debuninstall:
-	sudo dpkg -r keystone-resolver keystone-resolver-webui libkeystone-resolver-perl keystone-resolver-db
+	sudo dpkg -r keystone-resolver libkeystone-resolver-perl
 
 # It's incredibly dumb that we need to do this by hand
 really_uninstall:

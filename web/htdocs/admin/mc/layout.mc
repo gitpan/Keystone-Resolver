@@ -1,4 +1,4 @@
-%# $Id: layout.mc,v 1.19.2.2 2008-01-17 15:43:00 mike Exp $
+%# $Id: layout.mc,v 1.21 2008-02-04 19:23:57 mike Exp $
 <%args>
 $debug => undef
 $title
@@ -16,7 +16,20 @@ $r->content_type("text/html; charset=utf-8");
 my $admin = Keystone::Resolver::Admin->admin();
 my $host = $ENV{HTTP_HOST}; # Or we could use SERVER_NAME
 my $tag = $admin->hostname2tag($host);
-my $site = $admin->site($tag);
+my $site;
+eval {
+    $site = $admin->site($tag);
+}; if ($@) {
+    print <<__EOT__;
+It was not possible to connect to the Keystone Resolver database.<br/>
+Please see <tt>/usr/share/libkeystone-resolver-perl/db/README</tt><br/>
+<br/>
+Detailed error message follows, but you can probably ignore it:
+<hr/>
+<pre>$@</pre>
+__EOT__
+    return;
+}
 die "unknown Keystone Resolver site '$tag' (host $host)" if !defined $site;
 $m->notes(site => $site);
 

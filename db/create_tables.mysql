@@ -1,9 +1,9 @@
-# $Id: create_tables.mysql,v 1.7 2007-07-19 12:53:14 mike Exp $
+# $Id: create_tables.mysql,v 1.8 2008-02-05 02:19:58 mike Exp $
 
 # Please read "../doc/data-model" before this file.
 #
 # Create the tables as follows:
-#	mysql -u kr_admin -p'kr-adm_3636' < create_tables.mysql
+#	mysql -u kr_admin -p'kr-adm_3636' kr < create_tables.mysql
 #
 #   ###	I have not even though about indexes and suchlike.
 #
@@ -11,8 +11,6 @@
 # compared with other strings by computer, while fields called "name"
 # are longer, mixed-case, may include spaces and are intended to be
 # read by humans.
-
-use kr;
 
 drop table if exists genre;
 create table genre (

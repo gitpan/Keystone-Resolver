@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.3 2007-12-01 21:52:34 mike Exp $
+# $Id: Makefile,v 1.6 2008-02-05 02:56:17 mike Exp $
 
 all: build
 
@@ -11,11 +11,11 @@ db.ok: create_db.mysql
 	touch db.ok
 
 tables.ok: create_tables.mysql db.ok
-	mysql -u'kr_admin' -p'kr_adm_3636' <create_tables.mysql
+	mysql -u'kr_admin' -p'kr_adm_3636' kr <create_tables.mysql
 	touch tables.ok
 
 data.ok: simple.mysql tables.ok
-	mysql -u'kr_admin' -p'kr_adm_3636' < $<
+	mysql -u'kr_admin' -p'kr_adm_3636' kr < $<
 	touch data.ok
 
 simple.mysql: simple.d2m data2mysql.pl

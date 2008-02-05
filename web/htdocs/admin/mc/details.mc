@@ -1,4 +1,4 @@
-%# $Id: details.mc,v 1.5.2.1 2008-01-17 12:49:20 mike Exp $
+%# $Id: details.mc,v 1.6 2008-01-29 14:48:59 mike Exp $
 % my $user = $m->comp("/mc/utils/user.mc", require => 1) or return;
 <%perl>
 my $status = 0;

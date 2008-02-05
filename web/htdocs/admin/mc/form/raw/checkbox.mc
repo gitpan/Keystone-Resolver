@@ -1,4 +1,4 @@
-%# $Id: checkbox.mc,v 1.1.2.1 2008-01-17 12:49:21 mike Exp $
+%# $Id: checkbox.mc,v 1.2 2008-01-29 14:49:01 mike Exp $
 <%args>
 $name
 $label

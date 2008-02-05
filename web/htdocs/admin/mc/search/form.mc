@@ -1,4 +1,4 @@
-%# $Id: form.mc,v 1.6.2.1 2008-01-17 12:49:21 mike Exp $
+%# $Id: form.mc,v 1.7 2008-01-29 14:49:02 mike Exp $
 % my $site = $m->notes("site");
 <%args>
 $_class

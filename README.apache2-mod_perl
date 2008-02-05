@@ -1,4 +1,4 @@
-$Id: README.apache2-mod_perl,v 1.1.2.4 2008-01-16 16:32:58 mike Exp $
+$Id: README.apache2-mod_perl,v 1.2 2008-01-29 14:48:57 mike Exp $
 
 We had some difficulty initially in getting the resolver to run under
 Apache2/mod_perl2 -- it was initially developed under Apache the 1.3

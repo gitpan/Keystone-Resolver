@@ -1,6 +1,22 @@
-$Id: Changes,v 1.40.2.8 2008-01-28 12:26:41 mike Exp $
+$Id: Changes,v 1.47 2008-02-05 02:56:30 mike Exp $
 
 Revision history for Perl extension Keystone::Resolver.
+
+1.16  Tue Feb  5 02:57:05 GMT 2008
+	- Remove advisory dependency on Apache module from
+	  Makefile.PL, as the true dependency is now on EITHER Apache
+	  or Apache2, and there is no way to specify that in the
+	  PREREQ_PM clause.
+	- Modification to how the sample database is built result in a
+	  more flexible configuration.
+	- Both the resolver itself and the Admin UI issue more a
+	  polite, informative message if the Resource Database is not
+	  there.
+	- Documentation tweaks arising from merge of Apache2 CVS
+	  branch back into head.
+	- README describes public CVS archive, Debian installation
+	  procedure and service-names in the default resource
+	  database.
 
 1.15  Mon Jan 28 12:26:37 GMT 2008
 	- Fix error in Apache2 debian-package configuration file:

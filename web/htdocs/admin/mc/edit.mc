@@ -1,4 +1,4 @@
-%# $Id: edit.mc,v 1.18.2.1 2008-01-17 12:49:20 mike Exp $
+%# $Id: edit.mc,v 1.19 2008-01-29 14:48:59 mike Exp $
 <%args>
 $_class
 $id => undef

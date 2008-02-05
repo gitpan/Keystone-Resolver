@@ -1,4 +1,4 @@
-%# $Id: _control.mc,v 1.3.2.1 2008-01-17 12:49:20 mike Exp $
+%# $Id: _control.mc,v 1.4 2008-01-29 14:49:00 mike Exp $
 <%args>
 $which
 $obj => undef

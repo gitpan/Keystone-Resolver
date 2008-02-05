@@ -1,4 +1,4 @@
-# $Id: Resolver.pm,v 1.22.2.5 2008-01-28 12:25:58 mike Exp $
+# $Id: Resolver.pm,v 1.26 2008-02-05 01:49:31 mike Exp $
 
 package Keystone::Resolver;
 
@@ -13,7 +13,7 @@ use Keystone::Resolver::Descriptor;
 use Keystone::Resolver::Database;
 use Keystone::Resolver::ResultSet;
 
-our $VERSION = '1.15';
+our $VERSION = '1.16';
 
 
 =head1 NAME
@@ -304,8 +304,9 @@ sub stylesheet {
  $db = $resolver->db("kr-backup");
 
 Returns the database object associated with this specified name for
-this resolver.  if no name is provided, the default name "kr" (for
-Keystone Resolver) is used.  If the resolver does not yet have a
+this resolver.  If no name is provided, the default name specified by
+the C<KRdb> environment variable is used; if this is also missing,
+"kr" is used.  If the resolver does not yet have a
 database handle associated with this name, then one is created for it,
 cached for next time, and returned.  The handle is a
 C<Keystone::Resolver::Database> object: see the documentation for how
@@ -317,7 +318,7 @@ sub db {
     my $this = shift();
     my($name) = @_;
 
-    $name ||= "kr";
+    $name ||= $ENV{KRdb} || "kr";
 
 #    ### This is a hack.  We can do better
 #    if (!defined $name) {

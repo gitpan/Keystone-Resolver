@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: data2mysql.pl,v 1.2 2007-05-25 09:58:38 mike Exp $
+# $Id: data2mysql.pl,v 1.3 2008-02-05 02:19:32 mike Exp $
 #
 # Converts data from a simple, easy-to-edit format called d2m into SQL
 # INSERT statements suitable for feeding to MySQL.  The d2m format is
@@ -25,8 +25,6 @@ use warnings;
 
 my $table = undef;
 my @columns;
-
-print "use kr;\n";
 
 while (<>) {
     chomp();

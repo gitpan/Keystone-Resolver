@@ -1,4 +1,4 @@
-%# $Id: submitted.mc,v 1.3.2.1 2008-01-17 13:02:29 mike Exp $
+%# $Id: submitted.mc,v 1.4 2008-01-29 14:49:02 mike Exp $
 % my $site = $m->notes("site");
 <%perl>
 my %data;

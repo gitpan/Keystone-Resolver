@@ -1,4 +1,4 @@
-%# $Id: register.mc,v 1.2.2.1 2008-01-17 13:02:28 mike Exp $
+%# $Id: register.mc,v 1.3 2008-01-29 14:49:02 mike Exp $
 <%perl>
 my $p1 = utf8param($r, "password1");
 my $p2 = utf8param($r, "password2");

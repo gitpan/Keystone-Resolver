@@ -1,4 +1,4 @@
-%# $Id: submitted.mc,v 1.7.2.1 2008-01-17 12:49:22 mike Exp $
+%# $Id: submitted.mc,v 1.8 2008-01-29 14:49:03 mike Exp $
 <%args>
 $_class
 $_query => undef
