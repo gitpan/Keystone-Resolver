@@ -1,4 +1,4 @@
-%# $Id: submitted.mc,v 1.8 2008-01-29 14:49:03 mike Exp $
+%# $Id: submitted.mc,v 1.9 2008-02-07 10:11:32 mike Exp $
 <%args>
 $_class
 $_query => undef
@@ -26,7 +26,7 @@ if (!defined $rs) {
 my $n = $rs->count();
 if ($n > 0) {
     $session->update(query => encode_hash(%query));
-    $m->comp("result.mc", _class => $_class, rs => $rs, first => $_first);
+    $m->comp("result.mc", _class => $_class, rs => $rs, first => $_first, _sort => $_sort);
     $m->comp("/mc/newlink.mc", _class => $_class);
 } else {
 </%perl>

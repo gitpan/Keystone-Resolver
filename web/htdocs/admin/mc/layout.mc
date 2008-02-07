@@ -1,4 +1,4 @@
-%# $Id: layout.mc,v 1.21 2008-02-04 19:23:57 mike Exp $
+%# $Id: layout.mc,v 1.23 2008-02-07 14:26:46 mike Exp $
 <%args>
 $debug => undef
 $title
@@ -30,7 +30,13 @@ Detailed error message follows, but you can probably ignore it:
 __EOT__
     return;
 }
-die "unknown Keystone Resolver site '$tag' (host $host)" if !defined $site;
+if (!defined $site) {
+    print <<__EOT__;
+Unknown Keystone Resolver site '$tag' (host $host)</br>
+Please see <tt>/usr/share/libkeystone-resolver-perl/db/README.sites</tt><br/>
+__EOT__
+    return;
+}
 $m->notes(site => $site);
 
 # Totally chiropteral-excrementally crazy ... you have to use a
@@ -88,7 +94,21 @@ if ($uid) {
 # Generate the text of the client area before emitting the framework:
 # this allows it to affect the state, so that for example a login or
 # logout $component can set or unset $user.
-my $text = $m->scomp($component, %ARGS);
+my $text;
+eval {
+    $text = $m->scomp($component, %ARGS);
+}; if ($@ && (!ref $@ || $@->isa("HTML::Mason::Exception")) && $@ =~ /Unknown column/) {
+    print <<__EOT__;
+A column was missing from a table in the Keystone Resolver database.<br/>
+This probably means that the structure of your database is out of date<br/>
+Please see <tt>/usr/share/libkeystone-resolver-perl/db/README.update</tt><br/>
+<br/>
+Detailed error message follows, but you can probably ignore it:
+<hr/>
+<pre>$@</pre>
+__EOT__
+    return;
+}
 $user = $m->notes("user");
 </%perl>
 <?xml version="1.0" encoding="UTF-8"?>

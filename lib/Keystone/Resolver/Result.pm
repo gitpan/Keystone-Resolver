@@ -1,4 +1,4 @@
-# $Id: Result.pm,v 1.1 2007-01-26 12:33:15 mike Exp $
+# $Id: Result.pm,v 1.2 2008-02-07 14:02:44 mike Exp $
 
 package Keystone::Resolver::Result;
 
@@ -12,7 +12,7 @@ Keystone::Resolver::Result - a result, with its type, resolved from an OpenURL
 
 =head1 SYNOPSIS
 
- $result = new OpenURL::Result("Full text", "", "CQL Tutorial", 15,
+ $result = new OpenURL::Result("fulltext", "", "CQL Tutorial", 15,
                                "http://zing.z3950.org/cql/intro.html");
  $type = $result->type();
  $text = $result->text()
@@ -32,11 +32,11 @@ what we doctors, in fact, call a C<struct>.
 
 =head2 new()
 
- $r1 = new OpenURL::Result("Full text", "", "CQL web site", 10,
+ $r1 = new OpenURL::Result("fulltext", "", "CQL web site", 10,
                            "http://zing/z3950.org/cql/");
- $r2 = new OpenURL::Result("On-line book store", "", "Amazon", 25,
+ $r2 = new OpenURL::Result("bookstore", "", "Amazon", 25,
                            "isbn:0253333490");
- $r3 = new OpenURL::Result("Citation", "JVP", "JVP format citation", 99,
+ $r3 = new OpenURL::Result("citation", "JVP", "JVP format citation", 99,
                            "Wedel 2003.  <i>Paleobiology</i>.",
 			   "text/html", 1);
 

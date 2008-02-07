@@ -35,9 +35,9 @@ Reindex,10,heb@reindex.dk
 
 *service=service_type_id,provider_id,tag,name,priority,url_recipe,need_auth,auth_recipe,disabled
 # -- Web Search --
-2,4,,Google,10,http://www.google.com/search?q=%%22%t%%22,0,,0
-2,5,,Alltheweb,20,http://alltheweb.com/search?q=%%22%t%%22,0,,0
-2,6,,AltaVista,30,http://www.altavista.com/web/results?q=%%22%t%%22,0,,0
+2,4,,Google,10,http://www.google.com/search?q=%%22%{atitle/jtitle}%%22,0,,0
+2,5,,Alltheweb,20,http://alltheweb.com/search?q=%%22%{atitle/jtitle}%%22,0,,0
+2,6,,AltaVista,30,http://www.altavista.com/web/results?q=%%22%{atitle/jtitle}%%22,0,,0
 
 *service=service_type_id,provider_id,tag,name,priority,url_recipe,need_auth,auth_recipe,disabled
 # -- ILL requests --

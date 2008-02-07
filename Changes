@@ -1,6 +1,51 @@
-$Id: Changes,v 1.47 2008-02-05 02:56:30 mike Exp $
+$Id: Changes,v 1.55 2008-02-07 15:26:01 mike Exp $
 
 Revision history for Perl extension Keystone::Resolver.
+
+1.17  Thu Feb  7 16:26:37 CET 2008
+	- Fix character-set handling AGAIN :-) The resolver library
+	  was correcting accepting any specified character encoding
+	  and correctly outputting UTF-8 with the necessary XML and
+	  HTML specifications to sayt that's what it was doing, but
+	  the top level resolver script was telling Perl to do UTF-8
+	  encoding on output.  (Why didn't that cause problems when
+	  running under Apache 1/mod_perl 1?  Because of the
+	  character-set faries.)
+	- Generalise rewrite rule so that /resolve/<dbname> URLs are
+	  correctly interpreted.  This provides an easy means for
+	  running against alternative resource databases.
+	- Fix sorting in Admin UI such that it works through
+	  successive pages of results.
+	- When editing an object in the web-based Admin UI, drop-down
+	  option lists that are populated from the database (e.g. the
+	  service-types that a service can belong to) are now sorted.
+	- Fix a bug in editable_fields(), which was omitting from its
+	  output those fields used as links to non-dependent sets
+	  (e.g. the set of services implementing a service-type)
+	  rather than dependent sets (e.g. the one service-type to
+	  which a service belongs).  The result of that bug was that,
+	  for example, the raw numeric service_type_id was included on
+	  the service editing page as well as the service-type name.
+	  No more.
+	- The resolver now responds more politely if an attempt is
+	  made to access a virtual site not supported by the database,
+	  and points the user at a new README file that explains the
+	  situation.
+	- The service_type table now includes a new "plugin" field
+	  which can be used to explicitly specify the name of the Perl
+	  plugin to use to implement services of that type, if the
+	  required plugin is not named the same as the tag of the
+	  service-type.  This allows multiple service-types to share
+	  the same plugin.  (When this field is empty, the plugin
+	  named after the service-type's tag is used, as before.  Thus
+	  the new field is only an override mechanism, and the new
+	  arrangement is backwards compatible.)
+	- A database patch script is made available to support the
+	  new service_type.plugin field: see db/updates/
+	- When building URIs from recipes, the resolver now,
+	  correctly, accepts the first of several slash-separated
+	  candidate fields whose value is defined and non-empty,
+	  whereas before it would accept defined but empty values.
 
 1.16  Tue Feb  5 02:57:05 GMT 2008
 	- Remove advisory dependency on Apache module from

@@ -1,4 +1,4 @@
-# $Id: OpenURL.pm,v 1.17 2008-01-29 14:48:57 mike Exp $
+# $Id: OpenURL.pm,v 1.20 2008-02-07 14:56:10 mike Exp $
 
 package Keystone::Resolver::OpenURL;
 
@@ -299,7 +299,7 @@ sub resolve_to_results {
 	# We only want this single service, not all available ones
 	my $service = $this->db()->service_by_type_and_tag($type, $tag);
 	$this->die("no $type service with tag '$tag'") if !defined $service;
-	$this->_add_result($type, $service, 1);
+	$this->_add_result($service, 1);
 	goto DONE;
     }
 
@@ -610,8 +610,7 @@ sub _add_results_for_servicetype {
 	    #	services the user has no credentials for.
 	}
 
-	my $errmsg = $this->_add_result($service->service_type_tag(),
-					$service);
+	my $errmsg = $this->_add_result($service);
 	return $errmsg if defined $errmsg;
     }
 
@@ -628,12 +627,12 @@ sub _add_results_for_servicetype {
 #
 sub _add_result {
     my $this = shift();
-    my($stype, $service, $single) = @_;
+    my($service, $single) = @_;
 
     my($text, $errmsg, $nonfatal, $mimeType) =
-	$this->_make_result($stype, $service);
+	$this->_make_result($service);
     if (defined $text) {
-	my $res = new Keystone::Resolver::Result($stype,
+	my $res = new Keystone::Resolver::Result($service->service_type_tag(),
 						 $service->tag(),
 						 $service->name(),
 						 $service->priority(),
@@ -658,8 +657,10 @@ sub _add_result {
 
 sub _make_result {
     my $this = shift();
-    my($stype, $service) = @_;
+    my($service) = @_;
 
+    my $stype = ($service->service_type_plugin() ||
+		 $service->service_type_tag());
     eval {
 	require "Keystone/Resolver/plugins/ServiceType/$stype.pm";
     }; if ($@) {
@@ -772,7 +773,7 @@ sub _makeURI {
 	} else {
 	    foreach my $onekey (split /\//, $key) {
 		$val = $this->_singleDatum($onekey);
-		last if defined $val;
+		last if defined $val && $val ne "";
 	    }
 	    return undef if !defined $val;
 	    $val =~ s/-//g if $strip =~ /\*/;
@@ -842,6 +843,9 @@ always a URI.
 
 =cut
 
+### We should really use an XML-writer module rather than doing this
+#   by hand.  In particular, it's misleading that the _xmlencode()
+#   routine is responsible for the UTF-8 encoding of values.
 sub resolve_to_xml {
     my $this = shift();
 

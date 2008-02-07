@@ -1,4 +1,4 @@
-$Id: data-model,v 1.4 2007-07-12 13:12:41 mike Exp $
+$Id: data-model,v 1.5 2008-02-07 13:37:15 mike Exp $
 
 
 Entity Relationship Diagram
@@ -26,9 +26,9 @@ each credential's multiple key=value pairs.)
         |       |\_  _/|              | ____/|             |\_  _/|        |
         | tag   |__\/__| tag          |/_____| name        |__\/__| name   |
         | name  | _/\_ | name         |\____ | priority    | _/\_ | alias* |
-        |       |/    \| priority     |     \| url recipe  |/    \| issn   |
-        |       |      | [CODEREF]    |      | auth recipe |      |        |
-        |       |      |              |      | disabled    |      |        |
+        |       |/    \| plugin       |     \| url recipe  |/    \| issn   |
+        |       |      | priority     |      | auth recipe |      |        |
+        |       |      | [CODEREF]    |      | disabled    |      |        |
         +-------+      +--------------+      +-------------+      +--------+
                                                    /|\
                                                   / | \
@@ -90,7 +90,9 @@ to.  The most common and important case is the full text of the
 article (typically but not always as a PDF), as provided by a content
 aggregator.  Other important cases include abstracts, web-searches,
 on-line book-stores, local library catalogue's holdings, ILL requests
-and citations in some specific format.
+and citations in some specific format.  Each service-type is
+implemented by a plugin module whose name is stated in the "plugin"
+field, or in the "tag" if that is empty.
 
 There is a complex many-to-many relationship between genres and
 service types.  For example, the genre "book" can be resolved by an

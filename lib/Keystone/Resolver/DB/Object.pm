@@ -1,4 +1,4 @@
-# $Id: Object.pm,v 1.27 2007-12-13 17:12:03 mike Exp $
+# $Id: Object.pm,v 1.29 2008-02-07 14:29:52 mike Exp $
 
 package Keystone::Resolver::DB::Object;
 
@@ -50,7 +50,7 @@ sub field_map { {} }
 # not.
 #
 # Fields which are used as the link-field in a virtual-field recipe
-# not of the "dependent-link" type are omitted (e.g. service_type_id
+# of the "dependent-link" type are omitted (e.g. service_type_id
 # from the Service class, because it is the link-field in the
 # service_type recipe).
 #
@@ -63,13 +63,20 @@ sub editable_fields {
 
     my @allfields = $class->fields();
     my %hash = @allfields;
-    my(%linkFields, %virtualFields);
+    my(%omitFields, %virtualFields);
     foreach my $key (keys %hash) {
 	my $value = $hash{$key};
-	if (defined $value && ref $value && @$value > 3) {
-	    $virtualFields{$key} = 1;
-	    $linkFields{$value->[0]} = 1;
+	if (defined $value && ref $value) {
+	    if (@$value == 3) {
+		$omitFields{$value->[0]} = 1;
+	    } else {
+		$virtualFields{$key} = 1;
+	    }
 	}
+    }
+
+    foreach my $skip ($class->uneditable_fields()) {
+	$omitFields{$skip} = 1;
     }
 
     my %fdfields = $class->fulldisplay_fields();
@@ -78,7 +85,7 @@ sub editable_fields {
     while (@allfields) {
 	my $name = shift @allfields;
 	my $recipe = shift @allfields;
-	if (defined $linkFields{$name}) {
+	if (defined $omitFields{$name}) {
 	    warn "omitting '$name' from editable_field($class)\n";
 	    next;
 	}
@@ -93,6 +100,16 @@ sub editable_fields {
     }
 
     return @res;
+}
+
+
+# List of fields to omit from the return of editable fields (unless
+# that method has been overridden, of course).  This list is empty in
+# general, but can be used to knock out link-fields and suchlike as
+# required.
+#
+sub uneditable_fields {
+    return ();
 }
 
 

@@ -1,4 +1,4 @@
-# $Id: Utils.pm,v 1.4 2008-01-29 14:48:58 mike Exp $
+# $Id: Utils.pm,v 1.5 2008-02-07 09:15:34 mike Exp $
 
 package Keystone::Resolver::Utils;
 
@@ -154,21 +154,21 @@ sub apache_request {
     my $ver = mod_perl_version();
     #warn "ver=", (defined $ver ? "'$ver'" : "UNDEFINED"), "\n";
     if (!defined $ver) {
-	warn "Fallback: r='$fallback'\n";
+	#warn "Fallback: r='$fallback'\n";
 	return $fallback;
     }
 
     if ($ver == 2) {
 	require Apache2::RequestUtil;
 	my $r = Apache2::RequestUtil->request();
-	warn "Apache2: r='$r'\n";
+	#warn "Apache2: r='$r'\n";
 	return $r;
     }
 
     if ($ver == 1) {
 	require Apache;
 	my $r = Apache->request();
-	warn "Apache: r='$r'\n";
+	#warn "Apache: r='$r'\n";
 	return $r;
     }
 

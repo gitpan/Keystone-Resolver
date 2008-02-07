@@ -1,4 +1,4 @@
-# $Id: MANIFEST,v 1.22 2008-02-04 17:59:55 mike Exp $
+# $Id: MANIFEST,v 1.25 2008-02-07 14:30:36 mike Exp $
 
 Changes
 GPL-2
@@ -14,6 +14,8 @@ bin/kr-test
 bin/zetoc-harvester.pl
 db/Makefile
 db/README
+db/README.sites
+db/README.update
 db/base.d2m
 db/create_db.mysql
 db/create_db2.mysql
@@ -24,6 +26,7 @@ db/data2.d2m
 db/data2.mysql
 db/data2mysql.pl
 db/sample.d2m
+db/updates/update-1.17.mysql
 doc/README
 doc/data-model
 doc/installation
@@ -161,7 +164,6 @@ web/README
 web/conf/README
 web/conf/apache1.3/kafta-proxy.conf
 web/conf/apache1.3/kafta.conf
-web/conf/apache1.3/shawarma.conf
 web/conf/apache1.3/xeno.conf
 web/conf/apache2.0/development.conf
 web/htdocs/admin/details.html

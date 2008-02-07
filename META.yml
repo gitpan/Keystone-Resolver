@@ -1,9 +1,9 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Keystone-Resolver
-version:      1.16
+version:      1.17
 version_from: lib/Keystone/Resolver.pm
-installdirs:  site
+installdirs:  vendor
 requires:
     CGI:                           3.04
     DBI:                           1.46

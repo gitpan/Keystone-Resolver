@@ -30,11 +30,11 @@
 	>http://www.reindex.org/mailto:mike@indexdata.com/main/Hits.php?qe=lfo=Sørensen+and+lti=Råstoffer</result>
   <result type="websearch" priority="10" tag=""
 	service="Google"
-	>http://www.google.com/search?q=%22%22</result>
+	>http://www.google.com/search?q=%22Råstoffer%22</result>
   <result type="websearch" priority="20" tag=""
 	service="Alltheweb"
-	>http://alltheweb.com/search?q=%22%22</result>
+	>http://alltheweb.com/search?q=%22Råstoffer%22</result>
   <result type="websearch" priority="30" tag=""
 	service="AltaVista"
-	>http://www.altavista.com/web/results?q=%22%22</result>
+	>http://www.altavista.com/web/results?q=%22Råstoffer%22</result>
 </results>

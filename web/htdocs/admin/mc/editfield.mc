@@ -1,4 +1,4 @@
-%# $Id: editfield.mc,v 1.9 2007-12-13 17:07:24 mike Exp $
+%# $Id: editfield.mc,v 1.11 2008-02-07 11:15:27 mike Exp $
 <%args>
 $record		# Reference to a DB::Object::<something>
 $field		# Field name, e.g. "id", "tag", "name"
@@ -46,7 +46,6 @@ if (ref $type eq "ARRAY") {
     # Enumeration
     print qq[<select name="$field">\n];
     my $currentval = $record->field($field);
-    warn "currentval=$currentval\n";
     foreach my $val (0 .. @$type-1) {
 	my $text = $type->[$val];
 	my $qtext = encode_entities($text);
@@ -63,10 +62,17 @@ if (ref $type eq "ARRAY") {
     my $n = $rs->count();
     #print "(link field $linkclass:$linkto = $linkid, $linkfield / n=$n)";
     print qq[<select name="$linkfield">\n];
+    my @options;
     foreach my $i (1..$n) {
 	my $rec = $rs->fetch($i);
-	my $val = $rec->field($linkto);
-	my $qtext = encode_entities($rec->render_name());
+	push @options, [ $rec->field($linkto), $rec->render_name() ];
+    }
+
+    @options = sort { $a->[1] cmp $b->[1] } @options;
+
+    foreach my $ref (@options) {
+	my($val, $text) = @$ref;
+	my $qtext = encode_entities($text);
 	my $maybe = "";
 	$maybe = qq[ selected="selected"] if $val eq $linkid;
 	print qq[        <option value="$val"$maybe>$qtext</option>\n];

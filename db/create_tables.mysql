@@ -1,4 +1,4 @@
-# $Id: create_tables.mysql,v 1.8 2008-02-05 02:19:58 mike Exp $
+# $Id: create_tables.mysql,v 1.9 2008-02-07 14:32:46 mike Exp $
 
 # Please read "../doc/data-model" before this file.
 #
@@ -36,6 +36,7 @@ create table service_type (
 	id		int not null auto_increment,
 	tag		text,
 	name		text,
+	plugin		text,
 	priority	int,
 	# Each service-type also need special-case code in the resolver
 	primary key(id)

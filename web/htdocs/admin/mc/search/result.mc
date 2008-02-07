@@ -1,10 +1,11 @@
-%# $Id: result.mc,v 1.9 2007-12-12 15:16:33 marc Exp $
+%# $Id: result.mc,v 1.10 2008-02-07 10:13:47 mike Exp $
 <%args>
 $_class
 $rs
 $first
 $last => undef
 $pagesize => 10
+$_sort
 </%args>
 <%perl>
 my $site = $m->notes("site");
@@ -17,10 +18,11 @@ my $fullclass = "Keystone::Resolver::DB::$_class";
 my @df = $fullclass->display_fields();
 my $baseURL = "./search.html?_class=$_class&_query=" .
     uri_escape_utf8(encode_hash(%{ $rs->query() }));
+my $sortArg = defined $_sort ? "&_sort=$_sort" : "";
 </%perl>
      <p></p>
 <& nav, rs => $rs, first => $first, last => $last, pagesize => $pagesize,
-	baseURL => $baseURL &>
+	baseURL => $baseURL . $sortArg &>
      <p></p>
      <table class="center">
       <thead>
@@ -57,7 +59,7 @@ my $baseURL = "./search.html?_class=$_class&_query=" .
      </table>
      <p></p>
 <& nav, rs => $rs, first => $first, last => $last, pagesize => $pagesize,
-	baseURL => $baseURL &>
+	baseURL => $baseURL . $sortArg &>
 <%def nav>
 <%args>
 $rs

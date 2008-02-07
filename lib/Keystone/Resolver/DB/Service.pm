@@ -1,4 +1,4 @@
-# $Id: Service.pm,v 1.14 2007-12-13 17:09:38 mike Exp $
+# $Id: Service.pm,v 1.19 2008-02-07 14:29:26 mike Exp $
 
 package Keystone::Resolver::DB::Service;
 
@@ -43,6 +43,8 @@ sub fields { (id => undef,
 	      service_type => [ service_type_id => "ServiceType", "id" ],
 	      service_type_tag => [ service_type_id => "ServiceType", "id",
 				    undef, "tag" ],
+	      service_type_plugin => [ service_type_id => "ServiceType", "id",
+				       undef, "plugin" ],
 	      provider_id => undef,
 	      provider => [ provider_id => "Provider", "id" ],
 	      tag => undef,
@@ -102,6 +104,8 @@ sub fulldisplay_fields { (service_type => "Rt",
 			  auth_recipe => "t",
 			  disabled => "b",
 			  ) }
+
+sub uneditable_fields { qw(service_type_tag service_type_plugin) }
 
 sub field_map { {
     url_recipe => "URL recipe",
