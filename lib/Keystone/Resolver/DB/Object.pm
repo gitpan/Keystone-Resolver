@@ -1,4 +1,4 @@
-# $Id: Object.pm,v 1.29 2008-02-07 14:29:52 mike Exp $
+# $Id: Object.pm,v 1.31 2008-02-08 13:30:29 mike Exp $
 
 package Keystone::Resolver::DB::Object;
 
@@ -45,6 +45,39 @@ sub fulldisplay_fields { shift()->display_fields(@_) }
 sub field_map { {} }
 
 
+# Returns an empty array if it's OK to delete this object, or
+# otherwise an array of one or more strings, each specifying a reason
+# why not.  Can be overridden by subclasses, but by default insists on
+# no non-dependent links.
+#
+sub undeletable {
+    my $this = shift();
+
+    my @reasons;
+    my %fields = $this->fields();
+    foreach my $key (sort keys %fields) {
+	my $ref = $fields{$key};
+	if (ref $ref && defined $ref->[3]) {
+	    my($linkfield, $linkclass, $linkto) = @$ref;
+	    ### This is wasteful: it would be better to use a method
+	    #   that only counts hits instead of fetching all the data
+	    #   and constructing all the objects, but there is as yet
+	    #   no such method,
+	    my @hits = $this->db()->find($linkclass, undef, $linkto,
+					 $this->field($linkfield));
+	    my $n = @hits;
+	    if ($n == 1) {
+		push @reasons, "a $linkclass depends on it";
+	    } elsif ($n != 0) {
+		push @reasons, "$n $linkclass objects depend on it";
+	    }
+	}
+    }
+
+    return @reasons;
+}
+
+
 # Returns a list of all the field specified by fields(), with types
 # drawn from fulldisplay_fields() where available and using "t" when
 # not.
@@ -67,6 +100,9 @@ sub editable_fields {
     foreach my $key (keys %hash) {
 	my $value = $hash{$key};
 	if (defined $value && ref $value) {
+	    ### The correct test here might not be for @$value==3 but
+	    #   something like defined $value[3].  See all the virtual
+	    #   fields in Service.pm and think harder.
 	    if (@$value == 3) {
 		$omitFields{$value->[0]} = 1;
 	    } else {
@@ -265,6 +301,17 @@ sub update {
     }
 
     return scalar keys %data;
+}
+
+
+sub delete {
+    my $this = shift();
+
+    my $sql = "DELETE FROM " . $this->table() .
+	" WHERE id = " . $this->id() . ";";
+
+    $this->db()->do($sql, 0);
+    # Wow, that embarrasingly easy
 }
 
 

@@ -1,6 +1,10 @@
-$Id: Changes,v 1.55 2008-02-07 15:26:01 mike Exp $
+$Id: Changes,v 1.57 2008-02-11 11:05:21 mike Exp $
 
 Revision history for Perl extension Keystone::Resolver.
+
+1.18  Mon Feb 11 11:05:16 GMT 2008
+	- Add the ability to delete resource database objects from the
+	  Admin UI.
 
 1.17  Thu Feb  7 16:26:37 CET 2008
 	- Fix character-set handling AGAIN :-) The resolver library

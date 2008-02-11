@@ -1,4 +1,4 @@
-%# $Id: layout.mc,v 1.23 2008-02-07 14:26:46 mike Exp $
+%# $Id: layout.mc,v 1.24 2008-02-08 12:12:03 mike Exp $
 <%args>
 $debug => undef
 $title
@@ -108,6 +108,8 @@ Detailed error message follows, but you can probably ignore it:
 <pre>$@</pre>
 __EOT__
     return;
+} elsif ($@) {
+    die $@;
 }
 $user = $m->notes("user");
 </%perl>

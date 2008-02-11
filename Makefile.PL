@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.20 2008-02-04 18:03:17 mike Exp $
+# $Id: Makefile.PL,v 1.21 2008-02-08 11:06:46 mike Exp $
 
 use 5.008;
 use ExtUtils::MakeMaker;
@@ -48,6 +48,7 @@ debian/output:
 	rm -rf debian/output
 	mkdir debian/output
 	mv ../*.deb ../*.dsc ../*.tar.gz ../*.changes debian/output
+	lintian debian/output/*.deb
 #	(cd debian/output; for i in *.deb; do name=`echo $$i | sed 's/\.deb$$//'`; dpkg-deb -c $$i > $$name.list; done)
 
 debclean:

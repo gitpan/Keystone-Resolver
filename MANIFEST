@@ -1,4 +1,4 @@
-# $Id: MANIFEST,v 1.25 2008-02-07 14:30:36 mike Exp $
+# $Id: MANIFEST,v 1.26 2008-02-11 11:04:00 mike Exp $
 
 Changes
 GPL-2
@@ -166,12 +166,14 @@ web/conf/apache1.3/kafta-proxy.conf
 web/conf/apache1.3/kafta.conf
 web/conf/apache1.3/xeno.conf
 web/conf/apache2.0/development.conf
+web/htdocs/admin/delete.html
 web/htdocs/admin/details.html
 web/htdocs/admin/edit.html
 web/htdocs/admin/index.html
 web/htdocs/admin/login.html
 web/htdocs/admin/logout.html
 web/htdocs/admin/mc/debug/cookies.mc
+web/htdocs/admin/mc/delete.mc
 web/htdocs/admin/mc/details.mc
 web/htdocs/admin/mc/displayfield.mc
 web/htdocs/admin/mc/edit.mc
