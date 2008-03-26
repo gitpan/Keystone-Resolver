@@ -7,4 +7,5 @@
 #	Jurassic of Lourinhã, Portugal.  Annales de Paléontologie
 #	87(1): 61-73.  doi:10.1016/S0753-3969(01)88003-4
 
-exec perl -I ../lib ../web/htdocs/mod_perl/resolve "genre=article&sid=mimas%3Azetoc&title=ACTA+PALAEONTOLOGICA+POLONICA&issn=0567-7920&date=2000&volume=45&issue=4&spage=343&epage=388&atitle=Osteology%2C+paleobiology%2C+and+relationships+of+the+sauropod+dinosaur+Sauroposeidon&aulast=Wedel&auinit=M.+J.&dctype=scientific-paper&opt_xml=1&opt_loglevel=32767"
+export KRuser=kr_read KRpw=kr_read_3636
+exec perl -I ../lib ../web/htdocs/mod_perl/resolve "genre=article&sid=mimas%3Azetoc&title=ACTA+PALAEONTOLOGICA+POLONICA&issn=0567-7920&date=2000&volume=45&issue=4&spage=343&epage=388&atitle=Osteology%2C+paleobiology%2C+and+relationships+of+the+sauropod+dinosaur+Sauroposeidon&aulast=Wedel&auinit=M.+J.&dctype=scientific-paper&opt_xml=1&opt_loglevel=lifecycle"

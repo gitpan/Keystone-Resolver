@@ -1,4 +1,4 @@
-# $Id: MANIFEST,v 1.26 2008-02-11 11:04:00 mike Exp $
+# $Id: MANIFEST,v 1.28 2008-03-26 16:31:41 mike Exp $
 
 Changes
 GPL-2
@@ -19,17 +19,22 @@ db/README.update
 db/base.d2m
 db/create_db.mysql
 db/create_db2.mysql
+db/create_sequences.oracle
 db/create_tables.mysql
+db/create_tables.oracle
 db/create_tables2.mysql
 db/cufts2d2m.pl
 db/data2.d2m
 db/data2.mysql
 db/data2mysql.pl
+db/drop_tables.oracle
 db/sample.d2m
+db/simple.oracle
 db/updates/update-1.17.mysql
 doc/README
 doc/data-model
 doc/installation
+doc/logging
 doc/process
 doc/recipes
 etc/constraint/README
@@ -95,6 +100,7 @@ lib/Keystone/Resolver/plugins/ServiceType/fulltext.pm
 lib/Keystone/Resolver/plugins/ServiceType/websearch.pm
 t/descriptor.t
 t/encodehash.t
+t/loglevel.t
 t/makeuri.t
 t/regression.t
 t/regression/Makefile
@@ -166,6 +172,12 @@ web/conf/apache1.3/kafta-proxy.conf
 web/conf/apache1.3/kafta.conf
 web/conf/apache1.3/xeno.conf
 web/conf/apache2.0/development.conf
+web/htdocs/1cate-test/README
+web/htdocs/1cate-test/bookctx.kev
+web/htdocs/1cate-test/byref.kev
+web/htdocs/1cate-test/example2.kev
+web/htdocs/1cate-test/example2a.kev
+web/htdocs/1cate-test/jotest.kev
 web/htdocs/admin/delete.html
 web/htdocs/admin/details.html
 web/htdocs/admin/edit.html

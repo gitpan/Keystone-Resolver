@@ -1,4 +1,4 @@
-# $Id: OpenURL.pm,v 1.20 2008-02-07 14:56:10 mike Exp $
+# $Id: OpenURL.pm,v 1.21 2008-03-26 15:37:37 mike Exp $
 
 package Keystone::Resolver::OpenURL;
 
@@ -72,7 +72,15 @@ sub new {
     $this->{co} = new Keystone::Resolver::ContextObject($resolver,
 							$this, $argsref);
 
+    $this->log(Keystone::Resolver::LogLevel::LIFECYCLE, "new OpenURL $this");
     return $this;
+}
+
+
+sub DESTROY {
+    my $this = shift();
+    Keystone::Resolver::static_log(Keystone::Resolver::LogLevel::LIFECYCLE,
+				   "dead OpenURL $this");
 }
 
 

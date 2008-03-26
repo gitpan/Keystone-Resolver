@@ -1,6 +1,44 @@
-$Id: Changes,v 1.57 2008-02-11 11:05:21 mike Exp $
+$Id: Changes,v 1.60 2008-03-26 17:22:56 mike Exp $
 
 Revision history for Perl extension Keystone::Resolver.
+
+1.19  Wed Mar 26 17:22:50 GMT 2008
+	- Use the DBI module's connect_cached() method to pool similar
+	  connections.  This is important when running the resolver as
+	  a web-service, since (currently) each invocation makes a new
+	  Resolver object, which in turn makes its own Database
+	  object, which until this change made its own DBI
+	  connection.  Due to Perl's lazy garbage-collection, each
+	  Apache process can accumulate a lot of these connections
+	  before they get tidied up, and when (as is usually the case)
+	  many Apache processes are used, they can exhaust the
+	  back-end database's connection pool.
+	- Log-levels (as specified for example by the opt_loglevel
+	  query parameter) can now be specified symbolically, as a
+	  comma-separated list of level names, as well as numerically.
+	- New logging level, LIFECYCLE, notes the creation and
+	  destruction of Resolver, OpenURL and Database objects.
+	- The DBI logging level can now also be set, using the
+	  opt_dbi_trace query parameter.
+	- New function LogLevel::num() that converts a logging-level
+	  string into a numeric value, complementing the existing
+	  label().  Both these functions now handle composite values
+	  (e.g. CONVERT01|LIFECYCLE).
+	- New test-script for log-level utility functions.
+	- Add brief documentation of logging (doc/logging).
+	- Option setting is now always done via the option() method
+	  rather than, as previously at Resolver creation time, via
+	  direct assignment.  This ensures that the logging-related
+	  special cases are handled uniformly.
+	- Add static_log() function (not method) to the Resolver
+	  class, for use in contexts where no Resolver object is
+	  available to invoke the method on.
+	- Copies are included (web/htdocs/1cate-test/) of the KEV
+	  context-objects that were part of Openly's OpenURL 1.0 test
+	  suite.  These will be useful one day for local testing.
+	- More explicit diagnostics for some database problems.
+	- Steps towards support for Oracle as the back-end database:
+	  NOT YET COMPLETE.
 
 1.18  Mon Feb 11 11:05:16 GMT 2008
 	- Add the ability to delete resource database objects from the

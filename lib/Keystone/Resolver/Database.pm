@@ -1,4 +1,4 @@
-# $Id: Database.pm,v 1.18 2007-12-19 17:02:21 mike Exp $
+# $Id: Database.pm,v 1.24 2008-03-26 15:37:04 mike Exp $
 
 package Keystone::Resolver::Database;
 
@@ -87,14 +87,24 @@ sub new {
     }
 
     my $dbms = $ENV{KRdbms} || "mysql";
-    my $dbh = DBI->connect("dbi:$dbms:$name", $user, $pw,
-			   { RaiseError => 1, AutoCommit => 1 });
+    my $dbh = DBI->connect_cached("dbi:$dbms:$name", $user, $pw,
+				  { RaiseError => 1, AutoCommit => 1 });
 
-    return bless {
+    my $this = bless {
 	resolver => $resolver,
 	dbh => $dbh,
 	cache => {},
     }, $class;
+
+    $this->log(Keystone::Resolver::LogLevel::LIFECYCLE, "new DB $this with resolver=$resolver");
+    return $this;
+}
+
+
+sub DESTROY {
+    my $this = shift();
+    Keystone::Resolver::static_log(Keystone::Resolver::LogLevel::LIFECYCLE,
+				   "dead DB $this");
 }
 
 
@@ -120,6 +130,7 @@ sub genre_by_mformat {
 
     ### No doubt this could be optimised
     my($id) = $this->_find1values("genre_id", "mformat", uri => $mformat);
+    return undef if !$id;
     my $obj = $this->_objectFromDB("Genre", 0, id => $id);
     $this->loglookup("genre_by_mformat($mformat) -> ", $obj->render());
 
@@ -273,6 +284,11 @@ sub site_by_tag {
 }
 
 
+# Wrappers for finding a single object of a specific type
+sub session1 { shift()->find1("Keystone::Resolver::DB::Session", @_) }
+sub user1 { return shift()->find1("Keystone::Resolver::DB::User", @_) }
+
+
 ### Do not use for new code -- use find1() instead
 sub _objectFromDB {
     my $this = shift();
@@ -283,7 +299,7 @@ sub _objectFromDB {
     my @data = $this->_find1values($fields, $table, @conds);
     if (@data == 0) {
 	return undef if $allowNoMatch;
-	die("_objectFromDB($type): no match for " . $this->_condstr(@conds));
+	confess("_objectFromDB($type): no match for " . $this->_condstr(@conds));
     }
 
     return "Keystone::Resolver::DB::$type"->new($this, @data);
@@ -324,8 +340,8 @@ sub _findvalues {
 	push @keys, $conds[2*$i];
     }
 
-    my $cmd = ("select $want from $table where " .
-	       join(" and ", map { "$_ = ?" } @keys));
+    my $cmd = ("SELECT $want FROM $table WHERE " .
+	       join(" AND ", map { "$_ = ?" } @keys));
     $this->log(Keystone::Resolver::LogLevel::SQL,
 	       "_findvalues(): $cmd [", join(", ", @values), "]");
     my $sth = $this->{dbh}->prepare($cmd);
@@ -334,11 +350,6 @@ sub _findvalues {
     my $refref = $sth->fetchall_arrayref();
     return map { [ map { decode_utf8($_) } @$_ ] } @{ $refref };
 }
-
-
-# Wrappers for finding a single object of a specific type
-sub session1 { shift()->find1("Keystone::Resolver::DB::Session", @_) }
-sub user1 { return shift()->find1("Keystone::Resolver::DB::User", @_) }
 
 
 # Returns a SCALAR of the first (hopefully only) matching object
@@ -422,13 +433,13 @@ sub _findraw {
 	}
     }
 
-    my $cmd = "select $want from $table";
+    my $cmd = "SELECT $want FROM $table";
     if (@keys) {
-	$cmd .= " where " . join(" and ", map {
+	$cmd .= " WHERE " . join(" AND ", map {
 	    my $res;
 	    if (ref $_) {
 		my($key, $n) = @$_;
-		$res = "(" . join(" or ", map { "$key = ?" } (1..$n)) . ")";
+		$res = "(" . join(" OR ", map { "$key = ?" } (1..$n)) . ")";
 	    } else {
 		$res = "$_ = ?";
 	    }
@@ -436,7 +447,7 @@ sub _findraw {
 	} @keys);
     }
 
-    $cmd .= " order by $sortby" if defined $sortby;
+    $cmd .= " ORDER BY $sortby" if defined $sortby;
     $this->log(Keystone::Resolver::LogLevel::SQL,
 	       "_findraw(): $cmd [", join(", ", @values), "]");
     my $sth = $this->{dbh}->prepare($cmd);
@@ -469,12 +480,12 @@ sub _findcond {
     my $want = join(", ", @fields);
 
     # First, count how many rows we're going to find
-    my $sql = "select count(*) from $table where $cond";
+    my $sql = "SELECT COUNT(*) FROM $table WHERE $cond";
     my $countref = $dbh->selectall_arrayref($sql);
     my $count = $countref->[0]->[0];
 
-    $sql = "select $want from $table where $cond";
-    $sql .= " order by $sort" if defined $sort;
+    $sql = "SELECT $want FROM $table WHERE $cond";
+    $sql .= " ORDER BY $sort" if defined $sort;
     $this->log(Keystone::Resolver::LogLevel::SQL, "_findcond(): $sql");
     my($sth, $errmsg) = $this->do($sql, 0);
     return (undef, undef, $errmsg) if !defined $sth;
@@ -482,6 +493,7 @@ sub _findcond {
 }
 
 
+# Used by findcond() for INSERT, UPDATE and DELETE in DB/Object.pm
 sub do {
     my $this = shift();
     my($sql, $return_id) = @_;

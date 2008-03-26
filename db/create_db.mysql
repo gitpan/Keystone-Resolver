@@ -1,4 +1,4 @@
-# $Id: create_db.mysql,v 1.1 2007-01-26 12:59:05 mike Exp $
+# $Id: create_db.mysql,v 1.2 2008-03-06 12:07:32 marc Exp $
 # Creates the database and users for openurl
 #
 # Create the database as follows:
@@ -9,7 +9,11 @@
 #   mysql -u kr_admin -p kr_adm_3636 < create_tables.mysql
 #
 
-drop database if exists kr;
+# This script shall fail if a database does exists, therefore _not_ dropping databases just like that. MC
+# Also, I do not like at all that the database name is hard-coded here. MC
+# I suggest that this is entirely up to the user to decide. With 'kr' beeing the default, and asked in a 
+# shell script prompt, maybe. MC
+# drop database if exists kr;
 create database kr;
 use kr;
 

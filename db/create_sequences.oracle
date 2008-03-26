@@ -1,0 +1,101 @@
+-- $Id: create_sequences.oracle,v 1.2 2008-03-12 13:06:38 marc Exp $
+
+-- Please read "../doc/data-model" before this file.
+
+-- IN Oracle, things are a bit different than in MySQL
+
+
+
+DROP SEQUENCE "user_seq";
+DROP SEQUENCE "session_seq";
+DROP SEQUENCE "site_seq";
+DROP SEQUENCE "service_rule_seq";
+DROP SEQUENCE "service_type_rule_seq";
+DROP SEQUENCE "domain_seq";
+DROP SEQUENCE "config_seq";
+DROP SEQUENCE "source_seq";
+DROP SEQUENCE "sid_seq";
+DROP SEQUENCE "credentials_details_seq";
+DROP SEQUENCE "credentials_seq";
+DROP SEQUENCE "identity_seq";
+DROP SEQUENCE "service_serial_seq";
+DROP SEQUENCE "serial_alias_seq";
+DROP SEQUENCE "serial_seq";
+DROP SEQUENCE "service_seq";
+DROP SEQUENCE "provider_seq";
+DROP SEQUENCE "genre_service_type_seq";
+DROP SEQUENCE "service_type_seq";
+DROP SEQUENCE "mformat_seq";
+DROP SEQUENCE "genre_seq";
+
+
+
+-- DROP PROCEDURE PROC_CREATE_SEQS;
+-- 
+-- CREATE PROCEDURE PROC_CREATE_SEQS 
+--    (tablename IN VARCHAR2, table_primary_key IN VARCHAR2,
+--      seqname IN VARCHAR2)
+--   IS
+--     seqnum NUMBER(12);
+--     sql_str VARCHAR2(4000);
+--   BEGIN
+--      sql_str := 'SELECT MAX("' || table_primary_key 
+--                   || '") + 1  INTO seqnum FROM "' || tablename  || '"';
+--      EXECUTE IMMEDIATE sql_str; 
+--      DBMS_OUTPUT.PUT_LINE(sql_str);
+--      sql_str := 'CREATE SEQUENCE ' || seqname
+--               || ' START WITH '|| seqnum
+--               || ' INCREMENT BY 1 CACHE 1000 MAXVALUE 999999999999 NOCYCLE';
+--      EXECUTE IMMEDIATE sql_str;
+--      DBMS_OUTPUT.PUT_LINE(sql_str);
+-- END PROC_CREATE_SEQS;
+-- /
+-- 
+-- SHOW ERRORS;
+-- 
+-- CALL PROC_CREATE_SEQS('genre', 'id', 'genre_seq');
+-- 
+-- 
+-- DROP PROCEDURE PROC_TEST;
+-- 
+-- CREATE PROCEDURE PROC_TEST 
+--    (tablename IN VARCHAR2, table_primary_key IN VARCHAR2)
+--   IS
+--     sql_str VARCHAR2(4000);
+--     seqnum NUMBER(12);
+--   BEGIN
+--      -- sql_str := 'SELECT MAX("' || table_primary_key
+--      --             || '") + 1  INTO seqnum FROM "' || tablename  || '"';
+--      -- sql_str := 'SELECT MAX(ID) INTO seqnum FROM SITE';
+--      -- EXECUTE IMMEDIATE sql_str;
+--      SELECT MAX(ID) INTO seqnum FROM SITE;
+-- END PROC_TEST;
+-- /
+-- 
+-- SHOW ERRORS;
+-- 
+-- CALL PROC_TEST('genre', 'id');
+-- 
+
+CREATE SEQUENCE "user_seq" START WITH 1;
+CREATE SEQUENCE "session_seq" START WITH 1;
+CREATE SEQUENCE "site_seq" START WITH 1;
+CREATE SEQUENCE "service_rule_seq" START WITH 1;
+CREATE SEQUENCE "service_type_rule_seq" START WITH 1;
+CREATE SEQUENCE "domain_seq" START WITH 1;
+CREATE SEQUENCE "config_seq" START WITH 1;
+CREATE SEQUENCE "source_seq" START WITH 1;
+CREATE SEQUENCE "sid_seq" START WITH 1;
+CREATE SEQUENCE "credentials_details_seq" START WITH 1;
+CREATE SEQUENCE "credentials_seq" START WITH 1;
+CREATE SEQUENCE "identity_seq" START WITH 1;
+CREATE SEQUENCE "service_serial_seq" START WITH 1;
+CREATE SEQUENCE "serial_alias_seq" START WITH 1;
+CREATE SEQUENCE "serial_seq" START WITH 1;
+CREATE SEQUENCE "service_seq" START WITH 1;
+CREATE SEQUENCE "provider_seq" START WITH 1;
+CREATE SEQUENCE "genre_service_type_seq" START WITH 1;
+CREATE SEQUENCE "service_type_seq" START WITH 1;
+CREATE SEQUENCE "mformat_seq" START WITH 1;
+CREATE SEQUENCE "genre_seq" START WITH 1;
+

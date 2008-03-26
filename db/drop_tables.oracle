@@ -1,0 +1,35 @@
+-- $Id: drop_tables.oracle,v 1.2 2008-03-17 11:55:23 marc Exp $
+
+-- Please read "../doc/data-model" before this file.
+--
+-- IN Oracle, things are a bit different than in MySQL
+--
+
+-- Oracle does not like white lines in the middle of commands. Avoid!
+
+-- The drop statements need to be in inverse order of the create 
+-- statements, otherwise table foreign constrains will lock table
+-- dropping.
+
+DROP TABLE "user";
+DROP TABLE "session";
+DROP TABLE "site";
+DROP TABLE "service_rule";
+DROP TABLE "service_type_rule";
+DROP TABLE "domain";
+DROP TABLE "config";
+DROP TABLE "source";
+DROP TABLE "sid";
+DROP TABLE "credentials_details";
+DROP TABLE "credentials";
+DROP TABLE "identity";
+DROP TABLE "service_serial";
+DROP TABLE "serial_alias";
+DROP TABLE "serial";
+DROP TABLE "service";
+DROP TABLE "provider";
+DROP TABLE "genre_service_type";
+DROP TABLE "service_type";
+DROP TABLE "mformat";
+DROP TABLE "genre";
+

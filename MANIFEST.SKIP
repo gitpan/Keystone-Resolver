@@ -1,4 +1,4 @@
-# $Id: MANIFEST.SKIP,v 1.9 2008-01-30 14:19:17 mike Exp $
+# $Id: MANIFEST.SKIP,v 1.10 2008-03-26 16:23:33 mike Exp $
 
 .cvsignore
 CVS
@@ -23,8 +23,10 @@ lib/Keystone/Resolver/ID/info/CVS
 lib/Keystone/Resolver/ID/urn/CVS
 lib/Keystone/Resolver/Service/CVS
 lib/Keystone/Resolver/ServiceType/CVS
+lib/Keystone/Resolver/database-functions
 t/regression/CVS
 t/regression/failed
 t/regression/passed
 web/data
 web/htdocs/dbadmin/README
+web/htdocs/mod_perl/.perldb

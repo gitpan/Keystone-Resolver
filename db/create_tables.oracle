@@ -1,0 +1,243 @@
+-- $Id: create_tables.oracle,v 1.8 2008-03-17 11:55:23 marc Exp $
+
+-- Please read "../doc/data-model" before this file.
+--
+-- IN Oracle, things are a bit different than in MySQL
+--
+-- MySQL to Oracle Conversion:
+-- CHAR to CHAR 
+-- VARCHAR to VARCHAR2
+-- various Large Object types to RAW or BLOB
+-- DATE, DATETIME, and TIME to DATE 
+-- TIMESTAMP and YEAR to NUMBER
+-- INT datatypes to NUMBER(16, 0)   -- or shorter ?? 
+-- FLOAT, DOUBLE, REAL, and DECIMAL to FLOAT
+-- TEXT (max 65.535 chars) to VARCHAR2(4096)  
+-- BOOL to NUMBER(1, 0)
+-- KEY to INDEX
+--
+
+-- LEVEL is an Oracle reserved word, and therefore TABLE identity
+-- fails to create 
+-- SESSION and USER are reserved words as well, therefore creation of
+-- TABLE session and TABLE user fail. Needs to be corrected.  
+-- commented out right now until MySQL and Perl code has been changed
+-- http://www.lsbu.ac.uk/oracle/oracle7/api/doc/PCC18/apb.htm
+
+-- Oracle does not like white lines in the middle of commands. Avoid!
+
+-- Create the tables as follows:
+--
+-- In all these tables, fields called "tag" are short strings to be
+-- compared with other strings by computer, while fields called "name"
+-- are longer, mixed-case, may include spaces and are intended to be
+-- read by humans.
+
+
+CREATE TABLE "genre" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"tag"		VARCHAR2(4000),
+	"name"		VARCHAR2(4000)
+);
+
+-- "mformat" is short for "metadata format"
+CREATE TABLE "mformat" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"genre_id"	NUMBER(16, 0),	-- default genre for this mformat
+	"name"		VARCHAR2(4000),
+       	"uri"		VARCHAR2(4000),
+	FOREIGN KEY("genre_id") REFERENCES "genre"("id")
+);
+
+CREATE TABLE "service_type" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"tag"		VARCHAR2(4000),
+	"name"		VARCHAR2(4000),
+	"plugin"	VARCHAR2(4000),
+	"priority"	NUMBER(16, 0)
+	-- Each service-type also need special-case code in the resolver
+);
+
+-- Many-to-many link table between genre and service_type
+CREATE TABLE "genre_service_type" (
+	"genre_id"	NUMBER(16, 0),
+	"service_type_id"	NUMBER(16, 0),
+	FOREIGN KEY("genre_id") REFERENCES "genre"("id"),
+	FOREIGN KEY("service_type_id") REFERENCES "service_type"("id")
+);
+
+CREATE TABLE "provider" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"name"		VARCHAR2(4000),
+	"priority"	NUMBER(16, 0),
+	"contact"	VARCHAR2(4000)
+);
+
+CREATE TABLE "service" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"service_type_id"	NUMBER(16, 0),
+	"provider_id"	NUMBER(16, 0),
+	"tag"		VARCHAR2(4000), -- misnamed: really plugin_name
+	"name"		VARCHAR2(4000),
+	"priority"	NUMBER(16, 0),
+	-- These recipes will probably not be general enough
+	"url_recipe"	VARCHAR2(4000),
+	"need_auth"	NUMBER(1,0),
+	"auth_recipe"	VARCHAR2(4000),
+	"disabled"	NUMBER(1,0),
+	FOREIGN KEY("service_type_id") REFERENCES "service_type"("id"),
+	FOREIGN KEY("provider_id") REFERENCES "provider"("id")
+);
+
+CREATE TABLE "serial" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"name"		VARCHAR2(4000),
+	"issn"		VARCHAR2(4000)
+);
+
+-- Implements the repeating "alias" field for serial objects
+CREATE TABLE "serial_alias" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"serial_id"	NUMBER(16, 0),
+	"alias"		VARCHAR2(4000),
+	FOREIGN KEY("serial_id") REFERENCES "serial"("id")
+);
+
+-- Many-to-many link table between service and serial
+CREATE TABLE "service_serial" (
+	"service_id"	NUMBER(16, 0),
+	"serial_id"	NUMBER(16, 0),
+	FOREIGN KEY("service_id") REFERENCES "service"("id"),
+	FOREIGN KEY("serial_id") REFERENCES "serial"("id")
+);
+
+CREATE TABLE "identity" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"name"		VARCHAR2(4000),
+	"level"		VARCHAR2(4000),  -- Oracle reserved word
+	"parent_id"	NUMBER(16, 0),	-- NULL for no parent, otherwise an identity.id
+	FOREIGN KEY("parent_id") REFERENCES "identity"("id")
+);
+
+-- Many-to-many link table between service and identity
+CREATE TABLE "credentials" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"service_id"	NUMBER(16, 0),
+	"identity_id"	NUMBER(16, 0),
+	FOREIGN KEY("service_id") REFERENCES "service"("id"),
+	FOREIGN KEY("identity_id") REFERENCES "identity"("id")
+);
+
+-- Provides multiple name=value elements for the credentials table
+CREATE TABLE "credentials_details" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"credentials_id"	NUMBER(16, 0),
+	"name"		VARCHAR2(4000),
+	"value"		VARCHAR2(4000),
+	FOREIGN KEY("credentials_id") REFERENCES "credentials"("id")
+);
+
+CREATE TABLE "sid" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"tag"		VARCHAR2(4000),
+	-- A single recipe string will probably not be general enough
+	"recipe"		VARCHAR2(4000)
+);
+
+CREATE TABLE "source" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"sid_id"		NUMBER(16, 0),
+	"name"		VARCHAR2(4000),
+	"url"		VARCHAR2(4000),
+	"encoding"	VARCHAR2(4000),
+	FOREIGN KEY("sid_id") REFERENCES "sid"("id")
+);
+
+CREATE TABLE "config" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"name"		VARCHAR2(64) NOT NULL,
+	"value"		VARCHAR2(4000) NOT NULL
+);
+
+CREATE TABLE "domain" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"domain"	VARCHAR2(4000),
+	"status"	NUMBER(16, 0)
+);
+
+-- The next two tables allow the values of fields in an OpenURL to
+-- affect the selection of service-types and services that are used to
+-- resolve them.  Each such rule applies only when the specified field
+-- has the specified value.  When a rule files, it either allows only
+-- the service-types or services whose tags listed in the
+-- space-separated "tags" field (the default) or denies those
+-- service-types or services (if the "deny" field is true).
+-
+CREATE TABLE "service_type_rule" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"fieldname"	VARCHAR2(255),
+	"value"		VARCHAR2(255),
+	"deny"		NUMBER(1,0),
+	"tags"		VARCHAR2(4000)
+--	KEY(fieldname, value)
+);
+
+CREATE TABLE "service_rule" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"fieldname"	VARCHAR2(255),
+	"value"		VARCHAR2(255),
+	"deny"		NUMBER(1,0),
+	"tags"		VARCHAR2(4000)
+--	KEY(fieldname, value)
+);
+
+-- ----------------------------------------------------------------------------
+-- Everything below the cut is used by the Admin UI rather than the resolver.
+
+-- Rows in the "site" table represent a sub-site of the Admin UI,
+-- e.g. dbc.resolver.indexdata.com or talis.resolver.indexdata.com.
+-- This table will have many more fields by the time we're done, by
+-- which the per-site customisations are achieved.
+
+CREATE TABLE "site" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"tag"		VARCHAR2(255), -- NOT NULL
+	"name"		VARCHAR2(4000), -- NOT NULL
+	"bg_colour"	VARCHAR2(4000),
+	"email_address"	VARCHAR2(255)
+--	KEY(tag)
+);
+
+-- ORACLE RESERVED WORDS SESSION AND USER!! NEEDS CHANGES!!
+-- Sessions are site-specific
+CREATE TABLE "session" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"site_id"	NUMBER(16, 0), -- NOT NULL
+	"cookie"	VARCHAR2(255), -- NOT NULL,
+	"user_id"	NUMBER(16, 0),
+	"dest"		VARCHAR2(4000), -- Destination URL to go to after login
+	"query"		VARCHAR2(4000), -- Last query executed, for subsequent pages
+-- 	KEY(cookie),
+	UNIQUE("cookie")
+);
+
+ 
+-- Users are site-specific.  The "admin" field may be:
+--	0 - normal user
+--	1 - administrator
+--	2 - wizard
+--
+CREATE TABLE "user" (
+	"id"		NUMBER(16, 0) NOT NULL PRIMARY KEY,
+	"site_id"		NUMBER(16, 0), -- NOT NULL
+	"admin"		NUMBER(16, 0) DEFAULT 0, -- NOT NULL
+	"name"		VARCHAR2(4000), -- NOT NULL
+	"email_address"	VARCHAR2(255), -- NOT NULL
+	"password"	VARCHAR2(255), -- NOT NULL
+	FOREIGN KEY("site_id") REFERENCES "site"("id"),
+-- 	KEY(email_address),
+-- 	KEY(password),
+	UNIQUE("site_id", "email_address")
+);
+
+-- COMMIT;

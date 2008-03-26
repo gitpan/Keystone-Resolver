@@ -1,4 +1,4 @@
-# $Id: Utils.pm,v 1.5 2008-02-07 09:15:34 mike Exp $
+# $Id: Utils.pm,v 1.6 2008-02-15 09:49:17 mike Exp $
 
 package Keystone::Resolver::Utils;
 
@@ -230,7 +230,8 @@ global log as well as the resolver log.  Nice.>
 =cut
 
 sub apache_non_moronic_logging {
-    if (mod_perl_version() == 2) {
+    my $ver = mod_perl_version();
+    if (defined $ver && $ver == 2) {
 	require "Apache2/Log.pm";
 	*CORE::GLOBAL::warn = \&Apache2::ServerRec::warn;
 	#warn "calling CORE::warn() as warn()";

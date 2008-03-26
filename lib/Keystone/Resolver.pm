@@ -1,4 +1,4 @@
-# $Id: Resolver.pm,v 1.28 2008-02-08 10:22:29 mike Exp $
+# $Id: Resolver.pm,v 1.31 2008-03-26 15:39:18 mike Exp $
 
 package Keystone::Resolver;
 
@@ -13,7 +13,7 @@ use Keystone::Resolver::Descriptor;
 use Keystone::Resolver::Database;
 use Keystone::Resolver::ResultSet;
 
-our $VERSION = '1.18';
+our $VERSION = '1.19';
 
 
 =head1 NAME
@@ -73,25 +73,33 @@ sub new {
 	stylesheets => {},	# cache, populated by stylesheet()
 	db => {},		# cache, populated by db()
 	rw => $rw,
-	options => {
-	    # Options can be overridden by creation-time arguments.
-	    # They should probably take default values from the Config
-	    # table of the RDB instead of hard-wired values.
-	    logprefix => $0,
-	    loglevel => 0,
-	    xsltdir => $xsltdir,
-	},
+	options => {},
     }, $class;
 
+    # Initial options can be overridden by creation-time arguments.
+    # They should probably take default values from the Config table
+    # of the RDB instead of hard-wired values.
+    $this->option(logprefix => $0);
+    $this->option(loglevel => 0);
+    $this->option(xsltdir => $xsltdir);
     foreach my $key (keys %options) {
-	my $val = $options{$key};
-	# Special case for "loglevel" to allow hex and octal bitmasks
-	$val = oct($val) if $key eq "loglevel" && $val =~ /^0/;
-	$this->{options}->{$key} = $val;
+	$this->option($key, $options{$key});
     }
 
-    $this->log(Keystone::Resolver::LogLevel::CHITCHAT, "new resolver $this");
+    $this->log(Keystone::Resolver::LogLevel::LIFECYCLE, "new resolver $this");
     return $this;
+}
+
+
+sub DESTROY {
+    my $this = shift();
+    static_log(Keystone::Resolver::LogLevel::LIFECYCLE, "dead resolver $this");
+    my @names = sort keys %{ $this->{db} };
+    foreach my $name (@names) {
+	static_log(Keystone::Resolver::LogLevel::LIFECYCLE,
+		   "killing DB '$name'");
+	undef $this->{db}->{$name};
+    }
 }
 
 
@@ -131,40 +139,96 @@ The directory where the resolver looks for XSLT files.
 
 =cut
 
+use vars qw($_last_loglevel $_last_logprefix);
+# These must be set, probably by new(), before being used
+$_last_loglevel = undef;
+$_last_logprefix = undef;
+
+# ### There is an issue with logging modality here: if a call is made
+# with loglevel or dbi_trace > 0, then subsequent requests on the same
+# resolver will inherit that logging level.  Maybe each request
+# should explicitly zero the logging levels?
+#
 sub option {
     my $this = shift();
     my($key, $value) = @_;
 
     my $old = $this->{options}->{$key};
-    $this->{options}->{$key} = $value
-	if defined $value;
+    if (defined $value) {
+	# Special cases for "loglevel" to allow hex and octal bitmasks
+	# and to parse non-numeric level-lists.
+	if ($key eq "loglevel") {
+	    $value = oct($value)
+		if $value =~ /^0/;
+	    $value = Keystone::Resolver::LogLevel::num($value)
+		if $value !~ /^\d+$/;
+	}
+	#print STDERR "setting '$key' to '$value'\n";
+	$this->{options}->{$key} = $value;
+
+	# Save logging configuration for use of static_log()
+	$_last_loglevel = $value if $key eq "loglevel";
+	$_last_logprefix = $value if $key eq "logprefix";
+
+	if ($key eq "dbi_trace") {
+	    ### Two nastinesses here: the peek inside the database's
+	    # internal structures, and the fact that we are operating
+	    # on the default database.  We could "fix" the latter by
+	    # changing the global state of the DBI library, but that
+	    # would probably be even worse; or by getting db() from
+	    # the OpenURL object (which might have a query parameter
+	    # specifying which DB to work on) but we don't know what
+	    # OpenURL object we're using.
+	    $this->db()->{dbh}->trace($value);
+	}
+
+    }
 
     return $old;
 }
 
 
-=head2 log()
+=head2 log(), static_log()
 
  $resolver->log(Keystone::Resolver::LogLevel::CHITCHAT, "starting up");
+ Keystone::Resolver::static_log(Keystone::Resolver::LogLevel::CHITCHAT, "end");
 
-Logs a message to thye standard error stream if the log-level of the
-resolver includes the level specified as the first argument in its
-bitmask.  If so, the message consists of the logging prefix (by
+C<log()> Logs a message to the standard error stream if the log-level
+of the resolver includes the level specified as the first argument in
+its bitmask.  If so, the message consists of the logging prefix (by
 default the name of the program), the label of the specified level in
 parentheses, and all other arguments concatenated, finishing with a
 newline.
+
+C<static_log()> is provided for situtation in which no resolver object
+is available, e.g. in C<DESTROY()> methods.  It behaves the same as
+C<log()> but is a function, not a method.  Since it cannot consult the
+options of a resolver object, it uses
+I<the values most recently set into any resolver>.
+For most applications, in which only a single resolver is in use, this
+will work just fine.  Complex applications that use multiple resolvers
+should not rely on the integrity of static logging.
 
 =cut
 
 sub log {
     my $this = shift();
-    my($level, @args) = @_;
+    _log($this->option("loglevel"), $this->option("logprefix"), @_);
+}
 
-    if ($this->option("loglevel") & $level) {
+
+sub static_log {
+    _log($_last_loglevel, $_last_logprefix, @_);
+}
+
+
+sub _log {
+    my($loglevel, $logprefix, $level, @args) = @_;
+
+    if ($loglevel & $level) {
 	### could check another option for whether to include PID
-	my $prefix = $this->option("logprefix");
 	my $label = Keystone::Resolver::LogLevel::label($level);
-	print STDERR "$prefix ($label): ", @args, "\n";
+	print STDERR "$logprefix ($label): ", @args, "\n";
     }
 }
 
@@ -319,23 +383,18 @@ sub db {
     my($name) = @_;
 
     $name ||= $ENV{KRdb} || "kr";
-
-#    ### This is a hack.  We can do better
-#    if (!defined $name) {
-#	my $sn = $ENV{SCRIPT_NAME} || "/resolve";
-#	if ($sn =~ s@.*/resolve@@) {
-#	    $name = "kr$sn";
-#	} else {
-#	    $name = "kr";
-#	}
-#    }
-
     my $cache = $this->{db};
-    if (!defined $cache->{$name}) {
-	$cache->{$name} =
-	    new Keystone::Resolver::Database($this, $name, $this->{rw});
-    }
+    return $cache->{$name}
+        if defined $cache->{$name};
 
+    $cache->{$name} =
+	new Keystone::Resolver::Database($this, $name, $this->{rw});
+    ### We want the cached Database references to be weak, so that
+    #   the databases get destroyed before the resolver that they
+    #   depend on.  Weakening the reference should do this but doesn't
+    #	seem to have any effect (suggesting a bug in Perl?).  So we
+    #	won't do it, in case it has unanticipated side-effects.
+    #Scalar::Util::weaken($cache->{$name});
     return $cache->{$name};
 }
 
