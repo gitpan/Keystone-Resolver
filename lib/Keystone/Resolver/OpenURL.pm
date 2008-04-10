@@ -1,4 +1,4 @@
-# $Id: OpenURL.pm,v 1.23 2008-04-10 00:17:13 mike Exp $
+# $Id: OpenURL.pm,v 1.24 2008-04-10 14:22:11 mike Exp $
 
 package Keystone::Resolver::OpenURL;
 
@@ -192,7 +192,7 @@ sub rft { my $this = shift(); return $this->descriptor("rft")->metadata1(@_) }
 # Special delegation: knows database name from OpenURL argument
 sub db {
     my $this = shift();
-    use Carp; confess if !defined $this->{resolver};
+    use Carp; confess "resolver link is undefined" if !defined $this->{resolver};
     return $this->resolver()->db(@_ ? @_ : $this->option("db"));
 }
 

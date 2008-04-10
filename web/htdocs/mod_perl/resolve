@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: resolve,v 1.7 2008-04-07 15:36:39 mike Exp $
+# $Id: resolve,v 1.8 2008-04-10 14:23:33 mike Exp $
 #
 # This is the front end for Keystone Resolver when invoked either as
 # an OpenURL 0.1 resolver, or as a Z39.88 (OpenURL 1.0) resolver using
@@ -36,7 +36,8 @@ if (0) {
 
 binmode STDERR, ":utf8"; # For any temporary debugging output
 my $referer = $ENV{HTTP_REFERER} || "http://made.up.referrer/foo";
-my $openURL = Keystone::Resolver::OpenURL->newFromCGI($cgi, $referer);
+my $resolver = new Keystone::Resolver();
+my $openURL = Keystone::Resolver::OpenURL->newFromCGI($cgi, $referer, undef, $resolver);
 
 my($type, $content);
 eval {
