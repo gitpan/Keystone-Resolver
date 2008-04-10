@@ -1,6 +1,44 @@
-$Id: Changes,v 1.60 2008-03-26 17:22:56 mike Exp $
+$Id: Changes,v 1.68 2008-04-10 11:36:42 mike Exp $
 
 Revision history for Perl extension Keystone::Resolver.
+
+See bottom of file of work still to be done.
+
+1.20  Thu Apr 10 12:36:28 BST 2008
+	- Changes to memory management: since the Resolver, Database,
+	  OpenURL and  ContextObject classes all contain references
+	  back and forth, the next of mutually referencing objects was
+	  not getting destructed when it went out of scope, leading to
+	  memory exhaustion in long-running processes such as Apache
+	  servers under heavy load.  That is now fixed through the use
+	  of weak references back to the "owning" objects.  Tests show
+	  that resolving 50,000 OpenURLs does not cause noticable
+	  process growth.
+	- Changes to regression-test suite to facilitate running when
+	  not connected to network.
+	- Added new test script, admin.t, testing the code that
+	  underlies the web-based admin interface.
+	- Refactored database-access code in Database.pm, greatly
+	  reducing the number of similar functions and unifying
+	  logging.
+	- Add support for the Serial Alias object type, both in the
+	  code and in the Admin web UI.  (Admin support for this is
+	  not very useful yet, since, as with other kinds of link,
+	  there is no way to maintain the links between an alias
+	  object and the serial that it is an alias of.)
+	- Added low-level object-API support for the service-to-serial
+	  and genre-to-servicetype link tables.  (There's no point in
+	  wiring them into the Admin UI, since they contain no
+	  information other than link IDs.)
+	- Search-result listing in Admin web UI does not offer links
+	  to sort on virtual fields.
+	- Search-result listing in Admin web UI restored to being
+	  valid XHTML 1.0.
+	- Top-level "resolve" script runs within a scoped block, to
+	  ensure that all local ("my") variables go out of scope when
+	  the script ends, whatever Apache's memory management regime
+	  may be.  This contributes to fixing a memory-exhaustion
+	  problem.
 
 1.19  Wed Mar 26 17:22:50 GMT 2008
 	- Use the DBI module's connect_cached() method to pool similar
@@ -304,4 +342,9 @@ Revision history for Perl extension Resolver.
 	  In fact, this Perl-module superstructure was retro-fitted to
 	  a project that had already undergone a great deal of
 	  development prior to the h2xs-ization.
+
+TO DO
+	- ### When an OpenURL contains multiple rft_id's, as in
+	  t/regression/openly-01.in, handle them deterministically,
+	  and as required by the standard if it provides guidance.
 

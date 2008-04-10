@@ -1,4 +1,4 @@
-$Id: logging,v 1.3 2008-03-26 16:33:18 mike Exp $
+$Id: logging,v 1.4 2008-04-01 20:23:48 mike Exp $
 
 Logging behaviour in Keystone Resolver is specified by a combination
 of logging levels, documented in the Keystone::Resolver::LogLevel
@@ -11,6 +11,12 @@ will cause logging to be emitted describing both application-level use
 of the database ("dblookup", which notes calls such as
 genre_by_mformat() and services_by_type()), and the low-level SQL
 statements issued in order to fulfil those requests.
+
+Another way to set the logging level, useful mostly when running test
+scripts from the command-line, is by setting the KRloglevel
+environment variable.  This can also be set from the web-server
+configuration (along with KRuser, KRpw, etc.) to indicate a default
+logging-level.
 
 In additional to Keystone Resolver's own logging, Perl's DBI libarary
 (the layer that uses the underlying database software) can generate

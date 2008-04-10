@@ -1,4 +1,4 @@
-# $Id: Serial.pm,v 1.6 2007-06-09 00:11:57 mike Exp $
+# $Id: Serial.pm,v 1.7 2008-04-02 13:01:21 mike Exp $
 
 package Keystone::Resolver::DB::Serial;
 
@@ -15,6 +15,7 @@ sub table { "serial" }
 sub fields { (id => undef,
 	      name => undef,
 	      issn => undef,
+	      aliases => [ id => "SerialAlias", "serial_id", "alias" ],
 	      ) }
 
 sub search_fields { (name => "t25",
@@ -26,6 +27,10 @@ sub sort_fields { ("name") }
 sub display_fields { (name => "Lt",
 		      issn => "t",
 		      ) }
+
+sub fulldisplay_fields { (shift()->display_fields(),
+			  aliases => "t",
+			  ) }
 
 sub field_map { {
     issn => "ISSN",

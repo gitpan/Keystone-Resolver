@@ -1,4 +1,4 @@
-# $Id: Object.pm,v 1.31 2008-02-08 13:30:29 mike Exp $
+# $Id: Object.pm,v 1.32 2008-04-01 20:25:28 mike Exp $
 
 package Keystone::Resolver::DB::Object;
 
@@ -386,7 +386,7 @@ sub AUTOLOAD {
     die "$class: request for field '$fieldname' on undefined object"
 	if !defined $this;
 
-    return $this->field($fieldname);
+    return $this->field($fieldname, @_);
 }
 
 

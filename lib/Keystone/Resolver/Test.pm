@@ -1,4 +1,4 @@
-# $Id: Test.pm,v 1.2 2008-01-29 14:48:57 mike Exp $
+# $Id: Test.pm,v 1.3 2008-04-10 00:18:13 mike Exp $
 
 package Keystone::Resolver::Test;
 
@@ -107,8 +107,9 @@ sub _do_test {
     }
 
     my $cgi = new CGI($params);
+    my $resolver = new Keystone::Resolver();
     my $openURL = Keystone::Resolver::OpenURL->newFromCGI($cgi, undef,
-	{ baseURL => "http://example.com/resolve", %$optsref });
+	{ baseURL => "http://example.com/resolve", %$optsref }, $resolver);
     my($__UNUSED_type, $result) = $openURL->resolve();
 
     if ($result !~ /\n$/s) {

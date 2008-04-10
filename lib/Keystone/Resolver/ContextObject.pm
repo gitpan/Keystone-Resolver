@@ -1,4 +1,4 @@
-# $Id: ContextObject.pm,v 1.6 2007-09-20 13:35:48 mike Exp $
+# $Id: ContextObject.pm,v 1.10 2008-04-10 00:27:02 mike Exp $
 
 package Keystone::Resolver::ContextObject;
 
@@ -7,6 +7,7 @@ use warnings;
 use LWP;
 use URI::Escape;
 use Encode;
+use Scalar::Util;
 use Keystone::Resolver::Descriptor;
 
 =head1 NAME
@@ -304,8 +305,7 @@ sub _create {
     my $class = shift();
     my($resolver, $openurl, $args) = @_;
 
-    return bless {
-	resolver    => $resolver,
+    my $this = bless {
 	openurl     => $openurl,
 	### The next five parameters arguably belong in the OpenURL object.
 	url_ver     => $openurl->arg1($args, "url_ver", 1, 1), # unused
@@ -320,10 +320,13 @@ sub _create {
 	timestamp   => $openurl->arg1($args, "ctx_tim", 1, 1), # unused
 	descriptors => {},
     }, $class;
+
+    Scalar::Util::weaken($this->{openurl});
+    return $this;
 }
 
 
-sub resolver { return shift()->{resolver} }
+sub resolver { return shift()->openurl()->resolver() }
 sub openurl { return shift()->{openurl} }
 sub format { return shift()->{format} }
 sub ref { return shift()->{ref} }
@@ -408,6 +411,7 @@ sub _dereference_contextObject {
 
     my $ref = $this->ref();
     if (defined $ref) {
+	#return "no network for _dereference_contextObject()";####
 	my ($val, $errmsg) = $this->fetch($ref, "ContextObject");
 	if (!defined $val) {
 	    return !defined $errmsg ? undef :
@@ -579,8 +583,11 @@ sub _dereference_entities {
 
     # Resolve parameters indicated by "ref" attribute in each descriptor
     foreach my $d ($this->descriptors()) {
+	my $name = $d->name();
+	next if $name eq "req";	# No need to dereference requestor
+				# ### and probably others
 	my $errmsg = $this->_dereference_entity($d);
-	return "_dereference_entity(" . $d->name() . "): $errmsg"
+	return "_dereference_entity($name): $errmsg"
 	    if defined $errmsg;
     }
 
@@ -602,6 +609,7 @@ sub _dereference_entity {
 	if !defined $fmt;
     return "reference-format provided but no reference"
 	if !defined $ref;
+    #return "no network for _dereference_entity()";####
 
     my($val, $errmsg) = $this->fetch($ref, "entity($name)");
     return $errmsg if !defined $val;

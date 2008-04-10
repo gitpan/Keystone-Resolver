@@ -1,4 +1,4 @@
-%# $Id: submitted.mc,v 1.9 2008-02-07 10:11:32 mike Exp $
+%# $Id: submitted.mc,v 1.10 2008-04-01 20:20:20 mike Exp $
 <%args>
 $_class
 $_query => undef
@@ -16,7 +16,7 @@ if (defined $_query) {
 } else {
     %query = map { $_ => utf8param($r, $_) } utf8param($r);
 }
-my($rs, $errmsg) = $site->search("Keystone::Resolver::DB::$_class", %query);
+my($rs, $errmsg) = $site->search($_class, %query);
 if (!defined $rs) {
     $m->comp("/debug/fatal.mc", errmsg => $errmsg);
     $m->comp("/mc/newlink.mc", _class => $_class);

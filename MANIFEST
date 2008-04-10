@@ -1,4 +1,4 @@
-# $Id: MANIFEST,v 1.28 2008-03-26 16:31:41 mike Exp $
+# $Id: MANIFEST,v 1.31 2008-04-09 18:44:30 mike Exp $
 
 Changes
 GPL-2
@@ -53,13 +53,16 @@ lib/Keystone/Resolver/Admin.pm
 lib/Keystone/Resolver/ContextObject.pm
 lib/Keystone/Resolver/DB/Domain.pm
 lib/Keystone/Resolver/DB/Genre.pm
+lib/Keystone/Resolver/DB/GenreServiceType.pm
 lib/Keystone/Resolver/DB/MetadataFormat.pm
 lib/Keystone/Resolver/DB/Object.pm
 lib/Keystone/Resolver/DB/Provider.pm
 lib/Keystone/Resolver/DB/Rule.pm
 lib/Keystone/Resolver/DB/Serial.pm
+lib/Keystone/Resolver/DB/SerialAlias.pm
 lib/Keystone/Resolver/DB/Service.pm
 lib/Keystone/Resolver/DB/ServiceRule.pm
+lib/Keystone/Resolver/DB/ServiceSerial.pm
 lib/Keystone/Resolver/DB/ServiceType.pm
 lib/Keystone/Resolver/DB/ServiceTypeRule.pm
 lib/Keystone/Resolver/DB/Session.pm
@@ -98,6 +101,7 @@ lib/Keystone/Resolver/plugins/ServiceType/citation.pm
 lib/Keystone/Resolver/plugins/ServiceType/citeref.pm
 lib/Keystone/Resolver/plugins/ServiceType/fulltext.pm
 lib/Keystone/Resolver/plugins/ServiceType/websearch.pm
+t/admin.t
 t/descriptor.t
 t/encodehash.t
 t/loglevel.t
@@ -172,6 +176,7 @@ web/conf/apache1.3/kafta-proxy.conf
 web/conf/apache1.3/kafta.conf
 web/conf/apache1.3/xeno.conf
 web/conf/apache2.0/development.conf
+web/conf/apache2.0/oracle.conf
 web/htdocs/1cate-test/README
 web/htdocs/1cate-test/bookctx.kev
 web/htdocs/1cate-test/byref.kev

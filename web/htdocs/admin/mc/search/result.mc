@@ -1,4 +1,4 @@
-%# $Id: result.mc,v 1.10 2008-02-07 10:13:47 mike Exp $
+%# $Id: result.mc,v 1.11 2008-04-02 12:49:30 mike Exp $
 <%args>
 $_class
 $rs
@@ -16,9 +16,9 @@ if (!defined $last) {
 }
 my $fullclass = "Keystone::Resolver::DB::$_class";
 my @df = $fullclass->display_fields();
-my $baseURL = "./search.html?_class=$_class&_query=" .
+my $baseURL = "./search.html?_class=$_class&amp;_query=" .
     uri_escape_utf8(encode_hash(%{ $rs->query() }));
-my $sortArg = defined $_sort ? "&_sort=$_sort" : "";
+my $sortArg = defined $_sort ? "&amp;_sort=$_sort" : "";
 </%perl>
      <p></p>
 <& nav, rs => $rs, first => $first, last => $last, pagesize => $pagesize,
@@ -27,14 +27,20 @@ my $sortArg = defined $_sort ? "&_sort=$_sort" : "";
      <table class="center">
       <thead>
        <tr>
+% my %fields = $fullclass->fields();
 % while (@df) {
 % my $field = shift @df;
 % my $unused_type = shift @df;
 % my $sort = utf8param($r, "_sort");
 % $sort = defined $sort && $sort eq $field ? "$field desc" : $field;
-        <th><a href="<%
-	"$baseURL&_sort=" . uri_escape_utf8($sort)
-	%>"><% encode_entities($fullclass->label($field)) %></a></th>
+        <th>
+<%perl>
+my $sortable = !ref $fields{$field};
+print '<a href="' . "$baseURL&amp;_sort=" . uri_escape_utf8($sort) . '">' if $sortable;
+print encode_entities($fullclass->label($field));
+print '</a>' if $sortable;
+</%perl>
+        </th>
 % }
 % my $user = $m->comp("/mc/utils/user.mc", require => 0);
 % if (defined $user && $user->admin() > 0) {
@@ -79,14 +85,14 @@ my($prev, $next);
 if ($first > 1) {
     my $newstart = $first-$pagesize;
     $newstart = 1 if $newstart < 1;
-    $prev = qq[<a href="${baseURL}&_first=$newstart">$ptext</a>];
+    $prev = qq[<a href="${baseURL}&amp;_first=$newstart">$ptext</a>];
 } else {
     $prev = qq[<span class="disabled">$ptext</span>];
 }
 if ($last < $n) {
     my $newstart = $first+$pagesize;
     $newstart = 1 if $newstart < 1;
-    $next = qq[<a href="${baseURL}&_first=$newstart">$ntext</a>];
+    $next = qq[<a href="${baseURL}&amp;_first=$newstart">$ntext</a>];
 } else {
     $next = qq[<span class="disabled">$ntext</span>];
 }

@@ -1,4 +1,4 @@
-# $Id: Resolver.pm,v 1.31 2008-03-26 15:39:18 mike Exp $
+# $Id: Resolver.pm,v 1.34 2008-04-10 09:18:29 mike Exp $
 
 package Keystone::Resolver;
 
@@ -13,7 +13,7 @@ use Keystone::Resolver::Descriptor;
 use Keystone::Resolver::Database;
 use Keystone::Resolver::ResultSet;
 
-our $VERSION = '1.19';
+our $VERSION = '1.20';
 
 
 =head1 NAME
@@ -80,7 +80,7 @@ sub new {
     # They should probably take default values from the Config table
     # of the RDB instead of hard-wired values.
     $this->option(logprefix => $0);
-    $this->option(loglevel => 0);
+    $this->option(loglevel => $ENV{KRloglevel} || 0);
     $this->option(xsltdir => $xsltdir);
     foreach my $key (keys %options) {
 	$this->option($key, $options{$key});
@@ -94,6 +94,7 @@ sub new {
 sub DESTROY {
     my $this = shift();
     static_log(Keystone::Resolver::LogLevel::LIFECYCLE, "dead resolver $this");
+    return; # The rest of this is unnecessary
     my @names = sort keys %{ $this->{db} };
     foreach my $name (@names) {
 	static_log(Keystone::Resolver::LogLevel::LIFECYCLE,
@@ -229,6 +230,7 @@ sub _log {
 	### could check another option for whether to include PID
 	my $label = Keystone::Resolver::LogLevel::label($level);
 	print STDERR "$logprefix ($label): ", @args, "\n";
+	#use Carp; carp "$logprefix ($label): ", @args;
     }
 }
 

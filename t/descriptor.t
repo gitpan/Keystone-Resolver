@@ -1,4 +1,4 @@
-# $Id: descriptor.t,v 1.1 2007-01-26 12:31:59 mike Exp $
+# $Id: descriptor.t,v 1.2 2008-04-01 20:21:37 mike Exp $
 
 use strict;
 use Test;
@@ -6,13 +6,11 @@ BEGIN { plan tests => 15 };
 use Keystone::Resolver::Descriptor;
 ok(1); # If we made it this far, we're ok.
 
-my($d, $data);
-
-$d = new Keystone::Resolver::Descriptor("test");
+my $d = new Keystone::Resolver::Descriptor("test");
 ok(defined $d);
 ok($d->name(), "test");
 
-$data = $d->metadata("key");
+my $data = $d->metadata("key");
 ok(!defined($data));
 
 $data = $d->superdata("key");

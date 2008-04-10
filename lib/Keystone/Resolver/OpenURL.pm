@@ -1,4 +1,4 @@
-# $Id: OpenURL.pm,v 1.21 2008-03-26 15:37:37 mike Exp $
+# $Id: OpenURL.pm,v 1.23 2008-04-10 00:17:13 mike Exp $
 
 package Keystone::Resolver::OpenURL;
 
@@ -7,6 +7,7 @@ use warnings;
 use Encode;
 use URI::Escape qw(uri_escape_utf8);
 use XML::LibXSLT;
+use Scalar::Util;
 use Keystone::Resolver::Result;
 
 
@@ -66,6 +67,8 @@ sub new {
 	results => undef,	# to be filled in by resolve_to_results()
     }, $class;
 
+    Scalar::Util::weaken($this->{resolver});
+
     ###	It may be a mistake that we have separate OpenURL and
     #	ContextObject classes, as there is always a one-to-one
     #	correspondance between them.
@@ -89,6 +92,8 @@ sub DESTROY {
  $openURL = newFromCGI Keystone::Resolver::OpenURL($cgi, $ENV{HTTP_REFERER});
  $openURL = newFromCGI Keystone::Resolver::OpenURL($cgi, $ENV{HTTP_REFERER},
          { xml => 1, loglevel => 7 });
+ $openURL = newFromCGI Keystone::Resolver::OpenURL($cgi, $ENV{HTTP_REFERER},
+         undef, $resolver);
 
 This convenience method creates an OpenURL object from a set of CGI
 parameters, for the common case that the transport is HTTP-based.  it
@@ -96,22 +101,23 @@ behaves the same as the general constructor's C<new()> except that
 that a C<CGI> object is passed in place of the general constructor's
 C<$resolver>, C<$argsref> and C<$base> arguments.
 
-A new temporary C<Keystone::Resolver> object is created and associated
-with the OpenURL object.  It is initialised with options taken from
-C<$cgi>: keys prefixed with C<opt_> are interpreted as resolver
-options, like this:
+Unless a C<Keystone::Resolver> object is provided as the fourth
+argument, a new temporary one is created and associated with the
+OpenURL object.  It is initialised with options taken from C<$cgi>:
+keys prefixed with C<opt_> are interpreted as resolver options, like
+this:
 
 	opt_loglevel=7&opt_logprefix=ERROR
 
 All other keys in the CGI object are assumed to be part of the OpenURL
 context object.  Additional options may be passed into the temporary
-resolver in the form of an options third argument, a hash-reference.
+resolver in the form of an optional third argument, a hash-reference.
 
 =cut
 
 sub newFromCGI {
     my $class = shift();
-    my($cgi, $referer, $optsref) = @_;
+    my($cgi, $referer, $optsref, $resolver) = @_;
 
     my %args;
     my %opts = defined $optsref ? %$optsref : ();
@@ -140,7 +146,14 @@ sub newFromCGI {
     }
 
     my $baseURL = $opts{baseURL} || $cgi->url();
-    my $resolver = new Keystone::Resolver(%opts);
+    if (defined $resolver) {
+	foreach my $key (keys %opts) {
+	    $resolver->option($key, $opts{$key});
+	}
+    } else {
+	$resolver = new Keystone::Resolver(%opts);
+    }
+
     return $class->new($resolver, \%args, $baseURL, $referer);
 }
 
@@ -149,15 +162,37 @@ sub resolver { return shift()->{resolver} }
 sub base { return shift()->{base} }
 sub co { return shift()->{co} }
 
-# Delegations
-sub option { my $this = shift(); return $this->resolver()->option(@_) }
-sub log { my $this = shift(); return $this->resolver()->log(@_) }
+# Delegations -- not so simple now that the resolver reference is weak!
+sub option {
+    my $this = shift();
+    my($key, $value) = @_;
+    my $resolver = $this->{resolver};
+    if (defined $resolver) {
+	return $resolver->option(@_);
+    } else {
+	warn("OpenURL::option('$key', " .
+	     (defined $value ? "'$value'" : "undef") .
+	     ") on weakened {resolver}, returning undef");
+	return undef;
+    }
+}
+
+sub log {
+    my $this = shift();
+    my $resolver = $this->{resolver};
+    if (defined $resolver) {
+	return $resolver->log(@_);
+    } else {
+	warn "weakened {resolver} reference has become undefined: logging @_";
+    }
+}
 sub descriptor { my $this = shift(); return $this->co()->descriptor(@_) }
 sub rft { my $this = shift(); return $this->descriptor("rft")->metadata1(@_) }
 
 # Special delegation: knows database name from OpenURL argument
 sub db {
     my $this = shift();
+    use Carp; confess if !defined $this->{resolver};
     return $this->resolver()->db(@_ ? @_ : $this->option("db"));
 }
 

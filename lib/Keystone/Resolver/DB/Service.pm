@@ -1,4 +1,4 @@
-# $Id: Service.pm,v 1.19 2008-02-07 14:29:26 mike Exp $
+# $Id: Service.pm,v 1.20 2008-04-02 13:01:52 mike Exp $
 
 package Keystone::Resolver::DB::Service;
 
@@ -24,10 +24,10 @@ sub table { "service" }
 # undefined; for virtual fields, it is an array of three, four or five
 # elements, the first three of which are always the same: the physical
 # field that provides the link, the class of the kind of object that
-# it links to and the field within that class that acts as the link.
+# it links to, and the field within that class that acts as the link.
 # When the fourth element is absent, the link is a dependent one to a
 # single "parent" object; when the fourth element is present, the link
-# is to a list a of associated objects, and the fourth element is the
+# is to a list of associated objects, and the fourth element is the
 # order in which they should be sorted.  Non-dependent-link virtual fields
 # usually return the name of the parent object, but if a fifth element
 # is specified it is the name of a parent-object field to return.

@@ -1,4 +1,4 @@
-# $Id: Database.pm,v 1.24 2008-03-26 15:37:04 mike Exp $
+# $Id: Database.pm,v 1.33 2008-04-10 00:15:25 mike Exp $
 
 package Keystone::Resolver::Database;
 
@@ -7,6 +7,7 @@ use warnings;
 use DBI;
 use Encode;			# To decode UTF-8 sequences from DB
 use Carp;
+use Scalar::Util;
 use Keystone::Resolver::Utils qw(encode_hash decode_hash);
 
 use Keystone::Resolver::DB::Genre;
@@ -21,6 +22,9 @@ use Keystone::Resolver::DB::MetadataFormat;
 use Keystone::Resolver::DB::Provider;
 use Keystone::Resolver::DB::ServiceTypeRule;
 use Keystone::Resolver::DB::ServiceRule;
+use Keystone::Resolver::DB::SerialAlias;
+use Keystone::Resolver::DB::ServiceSerial;
+use Keystone::Resolver::DB::GenreServiceType;
 
 
 =head1 NAME
@@ -96,6 +100,10 @@ sub new {
 	cache => {},
     }, $class;
 
+    # We don't want the back-reference to the parent object to prevent
+    # its destruction.
+    Scalar::Util::weaken($this->{resolver});
+
     $this->log(Keystone::Resolver::LogLevel::LIFECYCLE, "new DB $this with resolver=$resolver");
     return $this;
 }
@@ -108,18 +116,32 @@ sub DESTROY {
 }
 
 
-sub log { my $this = shift(); return $this->{resolver}->log(@_) }
-sub loglookup { my $this = shift();
-		return $this->log(Keystone::Resolver::LogLevel::DBLOOKUP, @_) }
+sub log {
+    my $this = shift();
+    my $resolver = $this->{resolver};
+    if (defined $resolver) {
+	return $resolver->log(@_);
+    } else {
+	warn "weakened {resolver} reference has become undefined: logging @_";
+    }
+}
+
+
+sub loglookup {
+    my $this = shift();
+    return $this->log(Keystone::Resolver::LogLevel::DBLOOKUP,
+		      map { !defined $_ ? "[undef]" :
+				ref $_ ? $_->render() : $_ } @_);
+}
 
 
 sub genre_by_name {
     my $this = shift();
     my($name) = @_;
 
-    my $obj = $this->_objectFromDB("Genre", 1, name => $name);
+    my $obj = $this->find1("Genre", name => $name);
     return undef if !defined $obj;
-    $this->loglookup("genre_by_name($name) -> ", $obj->render());
+    $this->loglookup("genre_by_name($name) -> ", $obj);
     return $obj;
 }
 
@@ -128,11 +150,11 @@ sub genre_by_mformat {
     my $this = shift();
     my($mformat) = @_;
 
-    ### No doubt this could be optimised
-    my($id) = $this->_find1values("genre_id", "mformat", uri => $mformat);
-    return undef if !$id;
-    my $obj = $this->_objectFromDB("Genre", 0, id => $id);
-    $this->loglookup("genre_by_mformat($mformat) -> ", $obj->render());
+    # No doubt this could be optimised, but not using the object model
+    my $mfobj = $this->find1("MetadataFormat", uri => $mformat);
+    return undef if !$mfobj;
+    my $obj = $this->find1("Genre", id => $mfobj->genre_id());
+    $this->loglookup("genre_by_mformat($mformat) -> ", $obj);
 
     return $obj;
 }
@@ -143,14 +165,15 @@ sub servicetypes_by_genre {
     my($genreId) = @_;
 
     ### No doubt this could be optimised
-    my @idRefs = $this->_findvalues("service_type_id", "genre_service_type",
-			      genre_id => $genreId);
-    my @ids = map { $_->[0] } @idRefs;
+    my @gst = $this->find("GenreServiceType", "service_type_id", genre_id => $genreId);
+    my @ids = map { $_->service_type_id() } @gst;
     $this->loglookup("servicetypes_by_genre($genreId) -> " . join(", ", @ids));
     my @refs = ();
     foreach my $id (@ids) {
 	# There should be no duplicates unless the database is broken
-	push @refs, $this->_objectFromDB("ServiceType", 0, id => $id);
+	my $stype = $this->find1("ServiceType", id => $id)
+	    or die "no ServiceType $id";
+	push @refs, $stype;
     }
 
     # Result is sorted lowest priority first
@@ -196,13 +219,12 @@ sub service_by_type_and_tag {
     my($type, $tag) = @_;
 
     my $obj = undef;
-    my $stype = $this->_objectFromDB("ServiceType", 1, tag => $type);
-    $obj = $this->_objectFromDB("Service", 1,
+    my $stype = $this->find1("ServiceType", tag => $type);
+    $obj = $this->find1("Service",
 			 service_type_id => $stype->id(), tag => $tag)
 	if defined $stype;
     $this->loglookup("service_by_type_and_tag($type, $tag) -> ",
-		     defined $obj ? $obj->render() : "UNDEF",
-		     !defined $stype ? " (unknown service-type)" : "");
+		     $obj, !defined $stype ? " (unknown service-type)" : "");
     return $obj;
 }
 
@@ -216,11 +238,16 @@ sub serial {
 	# Normalise spaces and hyphens in ISSN
 	$issn =~ s/\s+//g;
 	$issn =~ s/-//g;
-	my $obj = $this->_objectFromDB("Serial", 1, issn => $issn);
+	my $obj = $this->find1("Serial", issn => $issn);
 	if (defined $obj) {
-	    $this->loglookup("serial(issn=$issn) -> " . $obj->render());
+	    $this->loglookup("serial(issn=$issn) -> ", $obj);
 	    return $obj;
 	}
+    }
+
+    if (!defined $title) {
+	$this->loglookup("serial(no title) NO MATCH");
+	return undef;
     }
 
     # No ISSN match: we need to search for the title instead
@@ -229,23 +256,22 @@ sub serial {
     $title =~ s/^\s+//;
     $title =~ s/\s+$//;
     $title =~ s/\s+/ /g;
-    my $obj = $this->_objectFromDB("Serial", 1, name => $title);
+    my $obj = $this->find1("Serial", name => $title);
     if (defined $obj) {
-	$this->loglookup("serial(title=$title) -> " . $obj->render());
+	$this->loglookup("serial(title=$title) -> ", $obj);
 	return $obj;
     }
 
     # No match on primary title: we need to search the aliases
-    my @data = $this->_find1values("serial_id", "serial_alias", alias => $title);
-    if (@data == 0) {
-	$this->loglookup("serial(alias=$title) NO MATCH");
-	return undef;
+    my $alias = $this->find1("SerialAlias", alias => $title);
+    if (defined $alias) {
+	$obj = $this->find1("Serial", id => $alias->serial_id());
+	$this->loglookup("serial(alias=$title) -> ", $obj);
+	return $obj;
     }
 
-    my $id = $data[0];
-    $obj = $this->_objectFromDB("Serial", 0, id => $id);
-    $this->loglookup("serial(alias=$title) -> " . $obj->render());
-    return $obj;
+    $this->loglookup("serial(alias=$title) NO MATCH");
+    return undef;
 }
 
 
@@ -253,10 +279,11 @@ sub service_has_serial {
     my $this = shift();
     my($service, $serial) = @_;
 
-    my @data = $this->_find1values("service_id", "service_serial",
-			     service_id => $service->id(),
-			     serial_id => $serial->id());
-    return @data != 0;
+    my $ss = $this->find1("ServiceSerial", service_id => $service->id(),
+					   serial_id => $serial->id());
+    my $b = defined $ss ? 1 : 0;
+    $this->loglookup("service_has_serial(", $service, ", ", "$serial) -> $b");
+    return $b;
 }
 
 
@@ -264,8 +291,8 @@ sub domain_by_name {
     my $this = shift();
     my($domain) = @_;
 
-    my $obj = $this->_objectFromDB("Domain", 1, domain => $domain);
-    $this->loglookup("domain_by_name($domain) -> ", $obj->render())
+    my $obj = $this->find1("Domain", domain => $domain);
+    $this->loglookup("domain_by_name($domain) -> ", $obj)
 	if defined $obj;
 
     return $obj;
@@ -276,8 +303,8 @@ sub site_by_tag {
     my $this = shift();
     my($tag) = @_;
 
-    my $obj = $this->_objectFromDB("Site", 1, tag => $tag);
-    $this->loglookup("site_by_tag($tag) -> ", $obj->render())
+    my $obj = $this->find1("Site", tag => $tag);
+    $this->loglookup("site_by_tag($tag) -> ", $obj)
 	if defined $obj;
 
     return $obj;
@@ -289,77 +316,6 @@ sub session1 { shift()->find1("Keystone::Resolver::DB::Session", @_) }
 sub user1 { return shift()->find1("Keystone::Resolver::DB::User", @_) }
 
 
-### Do not use for new code -- use find1() instead
-sub _objectFromDB {
-    my $this = shift();
-    my($type, $allowNoMatch, @conds) = @_;
-
-    my $fields = join(",", "Keystone::Resolver::DB::$type"->physical_fields());
-    my $table = "Keystone::Resolver::DB::$type"->table("dummy-type");
-    my @data = $this->_find1values($fields, $table, @conds);
-    if (@data == 0) {
-	return undef if $allowNoMatch;
-	confess("_objectFromDB($type): no match for " . $this->_condstr(@conds));
-    }
-
-    return "Keystone::Resolver::DB::$type"->new($this, @data);
-}
-
-
-### Do not use for new code -- use find1() instead
-sub _find1values {
-    my $this = shift();
-    my($want, $table, @conds) = @_;
-
-    my @refs = $this->_findvalues(@_);
-    return ()
-	if @refs == 0;
-
-    if (@refs > 1) {
-	### We should use OpenURL::warn(), but at this point in the
-	#	code, we don't know what OpenURL we're trying to
-	#	resolve.  Could be fixed by moving all this code into
-	#	a per-OpenURL Database class, but the payoff is small.
-	warn("multiple hits (" . scalar(@refs) . ") for $table." .
-	     $this->_condstr(@conds) .  ": " .
-	     join(", ", map { "[" . join(", ", @$_) . "]" } @refs));
-    }
-
-    return @{ $refs[0] };
-}
-
-
-### Do not use for new code -- use find() instead
-sub _findvalues {
-    my $this = shift();
-    my($want, $table, @conds) = @_;
-
-    my(@keys, @values);
-    for (my $i = 0; $i < @conds/2; $i++) {
-	push @values, $conds[2*$i+1];
-	push @keys, $conds[2*$i];
-    }
-
-    my $cmd = ("SELECT $want FROM $table WHERE " .
-	       join(" AND ", map { "$_ = ?" } @keys));
-    $this->log(Keystone::Resolver::LogLevel::SQL,
-	       "_findvalues(): $cmd [", join(", ", @values), "]");
-    my $sth = $this->{dbh}->prepare($cmd);
-    $sth->execute(@values);
-
-    my $refref = $sth->fetchall_arrayref();
-    return map { [ map { decode_utf8($_) } @$_ ] } @{ $refref };
-}
-
-
-# Returns a SCALAR of the first (hopefully only) matching object
-sub find1 {
-    my $this = shift();
-    my $class = shift();
-    my @conds = @_;
-
-    return $this->_findraw($class, 1, undef, @conds);
-
 # There is a cache in $this of loaded objects, indexed by the
 # $class/@conds combination.  But in general we can't use this since
 # we need a way of invalidating the cache when the relevant part of
@@ -368,7 +324,7 @@ sub find1 {
 # be stored in the database, so that a database search would necessary
 # to determine whether a cached object is invalid.  In which case, why
 # not just blindly do the search afresh each time the linked object is
-# needed?
+# needed?  So the following code does _not_ appear in find1()
 #
 #    my $index = "$class:" . encode_hash(@conds);
 #    my $obj = $this->{cache}->{$index};
@@ -383,6 +339,14 @@ sub find1 {
 #    }
 #
 #    return $obj;
+
+
+# Returns a SCALAR of the first (hopefully only) matching object
+sub find1 {
+    my $this = shift();
+    my($class, @conds) = @_;
+
+    return $this->_findraw($class, 1, undef, @conds);
 }
 
 
@@ -396,65 +360,23 @@ sub find {
 
 
 # @conds is a set of (key, value) pairs, with an implicit equality
-# relation, and all the pairs are ANDed together.  $sortby is the
-# order in which to sort the discovered records: if it is undefined,
-# this means to expect a single matching record and return just that
-# record rather than an array.
+# relation, and all the pairs are ANDed together.  $sortby, if
+# defined, is the order in which to sort the discovered records.  If
+# $single is true, this means to expect a single matching record and
+# return just that record rather than an array.
 #
 sub _findraw {
     my $this = shift();
-    my $class = shift();
-    my $single = shift();
-    my $sortby = shift();
-    my @conds = @_;
-
+    my($class, $single, $sortby, @conds) = @_;
     $class = "Keystone::Resolver::DB::$class" if $class !~ /::/;
-    my $table = $class->table();
-    my @fields = $class->physical_fields();
-    my $want = join(", ", @fields);
 
-    my(@keys, @values);
-    my $rendered = "";		# used only for error-messages
-    for (my $i = 0; $i < @conds/2; $i++) {
-	my $key = $conds[2*$i];
-	my $value = $conds[2*$i+1];
-	croak "key with value '$value' undefined" if !defined $key;
-	croak "value for key '$key' undefined" if !defined $value;
-
-	$rendered .= ", " if $i > 0;
-	if (ref $value) {
-	    $rendered .= "$key=(" . join(" or ", @$value) . ")";
-	    push @keys, [ $key, scalar(@$value) ];
-	    push @values, @$value;
-	} else {
-	    $rendered .= "$key=$value";
-	    push @keys, $key;
-	    push @values, $value;
-	}
-    }
-
-    my $cmd = "SELECT $want FROM $table";
-    if (@keys) {
-	$cmd .= " WHERE " . join(" AND ", map {
-	    my $res;
-	    if (ref $_) {
-		my($key, $n) = @$_;
-		$res = "(" . join(" OR ", map { "$key = ?" } (1..$n)) . ")";
-	    } else {
-		$res = "$_ = ?";
-	    }
-	    $res;
-	} @keys);
-    }
-
-    $cmd .= " ORDER BY $sortby" if defined $sortby;
-    $this->log(Keystone::Resolver::LogLevel::SQL,
-	       "_findraw(): $cmd [", join(", ", @values), "]");
-    my $sth = $this->{dbh}->prepare($cmd);
-    $sth->execute(@values);
+    my($cond, $rendered, @values) = _make_cond(@conds);
+    my($sth, undef, $errmsg) = $this->_findcond($class, $cond, $sortby, 1, @values);
+    die "_findraw(): $errmsg" if !defined $sth;
 
     my $refref = $sth->fetchall_arrayref();
     if ($single) {
+	my $table = $class->table();
 	if (@$refref == 0) {
 	    $this->log(1, "no $table satisfying $rendered");
 	    return undef;
@@ -469,63 +391,139 @@ sub _findraw {
 }
 
 
-### There are far too many near-identical functions here
+sub _make_cond {
+    my(@conds) = @_;
+
+    return (undef, "")
+	if !@conds;
+
+    my(@keys, @values);
+    my $rendered = "";		# used only for error-messages
+    for (my $i = 0; $i < @conds/2; $i++) {
+	my $key = $conds[2*$i];
+	my $value = $conds[2*$i+1];
+	croak "key with value '$value' undefined" if !defined $key;
+	croak "value for key '$key' undefined" if !defined $value;
+
+	$rendered .= ", " if $i > 0;
+	if (!ref $value) {
+	    $rendered .= "$key=$value";
+	    push @keys, $key;
+	    push @values, $value;
+	} else {
+	    $rendered .= "$key=(" . join(" or ", @$value) . ")";
+	    push @keys, [ $key, scalar(@$value) ];
+	    push @values, @$value;
+	}
+    }
+
+    my $cond = join(" AND ", map {
+	my $res;
+	if (ref $_) {
+	    my($key, $n) = @$_;
+	    $res = "(" . join(" OR ", map { "$key = ?" } (1..$n)) . ")";
+	} else {
+	    $res = "$_ = ?";
+	}
+	$res;
+    } @keys);
+
+    return ($cond, $rendered, @values);
+}
+
+
+# This is used directly by the Admin UI, but not by the resolver
+# proper, which instead uses the higher-level methods find1() and
+# find(), which call this through _findraw().
+#
 sub _findcond {
     my $this = shift();
-    my($class, $cond, $sort) = @_;
+    my($class, $cond, $sortby, $nocount, @values) = @_;
 
-    my $dbh = $this->{dbh};
     my $table = $class->table();
     my @fields = $class->physical_fields();
     my $want = join(", ", @fields);
 
-    # First, count how many rows we're going to find
-    my $sql = "SELECT COUNT(*) FROM $table WHERE $cond";
-    my $countref = $dbh->selectall_arrayref($sql);
-    my $count = $countref->[0]->[0];
-
-    $sql = "SELECT $want FROM $table WHERE $cond";
-    $sql .= " ORDER BY $sort" if defined $sort;
-    $this->log(Keystone::Resolver::LogLevel::SQL, "_findcond(): $sql");
-    my($sth, $errmsg) = $this->do($sql, 0);
+    my $sql = "SELECT $want FROM $table";
+    $sql .= " WHERE $cond" if defined $cond;
+    $sql .= " ORDER BY $sortby" if defined $sortby;
+    my($sth, $errmsg) = $this->do($sql, 0, @values);
     return (undef, undef, $errmsg) if !defined $sth;
+
+    my $count;
+    $count = $this->_count($sth, $table, $cond) if !$nocount;
+
     return($sth, $count);
 }
 
 
-# Used by findcond() for INSERT, UPDATE and DELETE in DB/Object.pm
+# Here we attempt to discover the number of records satisfying the
+# query in as efficient a way as possible.  There's no reliable
+# standard way to do this, so we have to pox about with
+# driver-specific code: some support rows(), some do not.
+#
+sub _count {
+    my $this = shift();
+    my($sth, $table, $cond) = @_;
+    my $dbh = $this->{dbh};
+
+    #warn "driver name is '" . $dbh->{Driver}->{Name} . "'\n";
+
+    # Exploit especially capable drivers that can count their own rows
+    if ($dbh->{Driver}->{Name} eq "xmysql") {
+	return $sth->rows();
+    }
+
+    # Some really brain-dead back-ends -- notably the Nearly Wonderful
+    # DBD::CSV -- don't support SELECT COUNT(); so we just do the
+    # actual query twice and damned well count the records.  Obviously
+    # very inefficient.  So it goes: it'll never happen on a Real
+    # Database.
+    if ($dbh->{Driver}->{Name} ne "CSV") {
+	my $sql = "SELECT id FROM $table";
+	$sql .= " WHERE $cond" if defined $cond;
+	my($sth, $errmsg) = $this->do($sql);
+	die "can't count rows by hand: $errmsg" if !defined $sth;
+	my $count = 0;
+	while ($sth->fetchrow_array()) {
+	    $count++;
+	}
+	return $count;
+    }
+
+    # Default implemetation
+    my $sql = "SELECT COUNT(*) FROM $table";
+    $sql .= " WHERE $cond" if defined $cond;
+    my $countref = $dbh->selectall_arrayref($sql);
+    die "can't count rows with '$sql': " . $dbh->errstr()
+	if !defined $countref;
+
+    return $countref->[0]->[0];
+}
+
+
+# Used by findcond() and _count(), and for INSERT, UPDATE and DELETE
+# in DB/Object.pm.  The intention is that ALL SQL statements executed
+# by the resolver and its admin UI come through here.
+#
 sub do {
     my $this = shift();
-    my($sql, $return_id) = @_;
+    my($sql, $return_id, @values) = @_;
+    my $dbh = $this->{dbh};
 
-    my $sth = $this->{dbh}->prepare($sql);
-    $this->log(Keystone::Resolver::LogLevel::SQL, "doing: $sql");
-    $sth->execute();
+    my $sth = $dbh->prepare($sql);
+    return (undef, $dbh->errstr()) if !$sth;
+    $this->log(Keystone::Resolver::LogLevel::SQL, "do(): $sql [", join(", ", @values), "]");
+    $sth->execute(@values) or return (undef, $dbh->errstr());
     return $sth if !$return_id;
 
     # last_insert_id() doesn't work for DBD::mysql, but there is a
     # MySQL-specific hack that we can use instead.
-    #my $id = $this->{dbh}->last_insert_id();
-    my $id = $this->{dbh}->{mysql_insertid};
+    #my $id = $dbh->last_insert_id();
+    my $id = $dbh->{mysql_insertid};
     die "can't get new record's ID" if !defined $id;
 
     return $id;
-}
-
-
-sub _condstr {
-    my $this = shift();
-    my(@conds) = @_;
-
-    my $s;
-    for (my $i = 0; $i < @conds/2; $i++) {
-	my $key = $conds[2*$i];
-	my $value = $conds[2*$i+1];
-	$s .= ", " if $i > 0;
-	$s .= "$key=$value";
-    }
-
-    return $s;
 }
 
 

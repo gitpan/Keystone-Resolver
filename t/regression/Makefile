@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.3 2007-12-17 11:55:41 mike Exp $
+# $Id: Makefile,v 1.4 2008-04-01 11:17:03 mike Exp $
 
 # This way of running the tests is usually not needed, as the Perl
 # packaging system's "make test" also works.  But this way is
@@ -7,20 +7,20 @@
 AUTH=env KRuser=kr_read KRpw=kr_read_3636
 
 test: passed
-	$(AUTH) perl -I../../lib ../../bin/kr-test nowarn=1 show_xml=1 `cat passed`
+	$(AUTH) perl -I../../lib ../../bin/kr-test $(KRTEST) nowarn=1 show_xml=1 `cat passed`
 
 ### Don't do this unless you really, really want to.
 really-rewrite: passed
 	$(AUTH) perl -I../../lib ../../bin/kr-test -w nowarn=1 show_xml=1 `cat passed`
 
-passed: Register
-	sed -n 's/^pass	//p' $? > $@
+passed: Register Makefile
+	sed -n 's/[ 	]*\#.*//; s/^pass	//p; /^end$$/q' $< > $@
 
 try: failed
 	$(AUTH) perl -I../../lib ../../bin/kr-test `cat failed`
 
 failed: Register
-	sed -n 's/^	//p' $? > $@
+	sed -n 's/[ 	]*\#.*//; s/^	//p; /^end$$/q' $< > $@
 
 # This is just a file of URLs, one per line, to paste into browsers
 urls: passed Makefile

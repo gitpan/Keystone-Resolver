@@ -1,4 +1,4 @@
-%# $Id: layout.mc,v 1.24 2008-02-08 12:12:03 mike Exp $
+%# $Id: layout.mc,v 1.25 2008-04-02 12:51:46 mike Exp $
 <%args>
 $debug => undef
 $title
@@ -158,6 +158,7 @@ $user = $m->notes("user");
     <li><a href="./search.html?_class=ServiceType">Service Type</a></li>
     <li><a href="./search.html?_class=Service">Service</a></li>
     <li><a href="./search.html?_class=Serial">Serial</a></li>
+    <li><a href="./search.html?_class=SerialAlias">Serial&nbsp;Alias</a></li>
     <li><a href="./search.html?_class=Domain">Domain</a></li>
     <li><a href="./search.html?_class=Provider">Provider</a></li>
     <li><a href="./search.html?_class=ServiceTypeRule">Service Type Rule</a></li>
@@ -175,6 +176,7 @@ $user = $m->notes("user");
     <li><a href="./search.html?_class=ServiceType&amp;_submit=Search">Service Type</a></li>
     <li><a href="./search.html?_class=Service&amp;_submit=Search">Service</a></li>
     <li><a href="./search.html?_class=Serial&amp;_submit=Search">Serial</a></li>
+    <li><a href="./search.html?_class=SerialAlias&amp;_submit=Search">Serial&nbsp;Alias</a></li>
     <li><a href="./search.html?_class=Domain&amp;_submit=Search">Domain</a></li>
     <li><a href="./search.html?_class=Provider&amp;_submit=Search">Provider</a></li>
     <li><a href="./search.html?_class=ServiceTypeRule&amp;_submit=Search">Service Type Rule</a></li>

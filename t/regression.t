@@ -1,36 +1,28 @@
-# $Id: regression.t,v 1.2 2007-12-11 16:59:57 mike Exp $
+# $Id: regression.t,v 1.4 2008-04-01 20:21:13 mike Exp $
 
 use strict;
 use Test;
 use vars qw(@tests);
 
 BEGIN {
-    @tests = qw(
-		fail-jtitle
-		feature-jtitle
-		feature-single
-		openly-01
-		openly-02
-		openly-03
-		openly-03a
-		openly-04
-		openly-05
-		openly-06
-		openly-07
-		openly-08
-		openly-09
-		openly-10
-		openly-12
-		openly-13
-		openly-14
-		standard-0.1-p4
-		standard-0.1-p5b
-		zetoc-sauroposeidon1
-		zetoc-sauroposeidon2
-		zetoc-suuwassea
-		);
+    use IO::File;
+    my $fh = new IO::File("<t/regression/Register")
+	or die "can't open test register";
+    while (my $line = <$fh>) {
+	chomp($line);
+	$line =~ s/#.*//;
+	$line =~ s/\s+$//;
+	next if !$line;
+	last if $line eq "end";
+	if ($line =~ s/^pass\t//) {
+	    push @tests, $line;
+	}
+    }
+    $fh->close();
+
     plan tests => 1 + scalar(@tests);
 };
+
 use Keystone::Resolver::Test;
 ok(1); # If we made it this far, we're ok.
 
