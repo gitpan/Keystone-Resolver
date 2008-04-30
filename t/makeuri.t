@@ -1,4 +1,4 @@
-# $Id: makeuri.t,v 1.3 2008-04-10 00:18:46 mike Exp $
+# $Id: makeuri.t,v 1.4 2008-04-11 12:03:30 mike Exp $
 
 use strict;
 use Test;
@@ -92,12 +92,8 @@ use Keystone::Resolver;
 ok(1);
 
 my $cgi = new CGI(\%args);
-# A resolver is created here, rather than within newFromCGI(), so that
-# it stays in scope and so is not deallocated when the only remaining
-# reference to it is the weak one in $openURL.
 my $resolver = new Keystone::Resolver();
-my $openURL = Keystone::Resolver::OpenURL->newFromCGI($cgi, undef, undef,
-						      $resolver);
+my $openURL = Keystone::Resolver::OpenURL->newFromCGI($resolver, $cgi);
 
 foreach my $ref (@recipes) {
     my($recipe, $result) = @$ref;

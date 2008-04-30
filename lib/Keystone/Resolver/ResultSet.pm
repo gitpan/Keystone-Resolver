@@ -1,4 +1,4 @@
-# $Id: ResultSet.pm,v 1.3 2007-09-12 23:21:07 mike Exp $
+# $Id: ResultSet.pm,v 1.4 2008-04-30 16:37:05 mike Exp $
 
 package Keystone::Resolver::ResultSet;
 use strict;
@@ -23,22 +23,27 @@ sub new {
 	$query{$key} =~ s/['']/''/g;
     }
 
-    ### Fix to use modified _find() instead, passing %query whole.
+    # Rather than building a condition by hand here, we should call
+    # directly into a Database method that accepts %query whole;
+    # unfortunately, that method doesn't exist yet.
+    #
     # At the moment, we don't narrow on $site->id() since resolver
     # objects like Services and Providers do not have any concept of
     # ownership -- but that will change.
+    my $db = $site->db();
     my $cond = (join(" and ", # "site_id = " . $site->id(),
-		     map { "$_ = '" . $query{$_} . "'" } sort keys %query));
-    $cond = "1=1" if $cond eq "";
-    $site->log(Keystone::Resolver::LogLevel::SQL, "SQL cond: $cond");
+		     map { $db->quote($_) . " = '" . $query{$_} . "'" } sort keys %query));
+    $cond = undef if $cond eq "";
+    $site->log(Keystone::Resolver::LogLevel::SQL, 
+	       (defined $cond ? "SQL cond: $cond" : "no condition"));
 
     my($sth, $count, $errmsg) =
-	$site->db()->_findcond($findclass, $cond, $sort);
+	$db->_findcond($findclass, $cond, $sort);
     return (undef, $errmsg) if !defined $sth;
     return bless {
 	site => $site,
 	class => $findclass,
-	db => $site->db(),
+	db => $db,
 	query => \%query,
 	sth => $sth,
 	count => $count,

@@ -1,4 +1,4 @@
-# $Id: MANIFEST,v 1.31 2008-04-09 18:44:30 mike Exp $
+# $Id: MANIFEST,v 1.34 2008-04-30 08:46:12 mike Exp $
 
 Changes
 GPL-2
@@ -16,20 +16,17 @@ db/Makefile
 db/README
 db/README.sites
 db/README.update
-db/base.d2m
 db/create_db.mysql
-db/create_db2.mysql
+db/create_db.oracle
 db/create_sequences.oracle
 db/create_tables.mysql
 db/create_tables.oracle
-db/create_tables2.mysql
 db/cufts2d2m.pl
-db/data2.d2m
-db/data2.mysql
 db/data2mysql.pl
-db/drop_tables.oracle
+db/head.d2m
 db/sample.d2m
 db/simple.oracle
+db/tail.d2m
 db/updates/update-1.17.mysql
 doc/README
 doc/data-model
@@ -170,6 +167,7 @@ t/regression/zetoc-sauroposeidon2.in
 t/regression/zetoc-sauroposeidon2.out
 t/regression/zetoc-suuwassea.in
 t/regression/zetoc-suuwassea.out
+t/resolve.t
 web/README
 web/conf/README
 web/conf/apache1.3/kafta-proxy.conf

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.6 2008-02-05 02:56:17 mike Exp $
+# $Id: Makefile,v 1.8 2008-04-25 16:58:23 mike Exp $
 
 all: build
 
@@ -23,9 +23,14 @@ simple.mysql: simple.d2m data2mysql.pl
 	./data2mysql.pl $< > $@
 	chmod 400 $@
 
-simple.d2m: base.d2m sample.d2m
+simple.oracle: simple.d2m data2mysql.pl
 	rm -f $@
-	cat base.d2m sample.d2m > $@
+	./data2mysql.pl -o $< > $@
+	chmod 400 $@
+
+simple.d2m: head.d2m sample.d2m tail.d2m
+	rm -f $@
+	cat head.d2m sample.d2m tail.d2m > $@
 	chmod 400 $@
 
 cufts.d2m: cufts2d2m.pl

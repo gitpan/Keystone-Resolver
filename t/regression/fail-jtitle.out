@@ -21,7 +21,7 @@
     <metadata key="spage">8</metadata>
     <metadata key="volume">3</metadata>
   </data>
-  <result type="error"
+  <result type="error" tag=""
 	>the resource database doesn't cover journal title xScience</result>
   <result type="citeref" priority="15" tag=""
 	service="Endnote citation"

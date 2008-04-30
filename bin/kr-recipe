@@ -3,7 +3,7 @@
 # Run like this:
 #	perl -I ../lib kr-recipe "[%_{title}]" title="a long-boring story"
 
-# $Id: kr-recipe,v 1.2 2007-12-03 09:39:25 mike Exp $
+# $Id: kr-recipe,v 1.4 2008-04-11 12:03:30 mike Exp $
 
 use strict;
 use warnings;
@@ -18,7 +18,8 @@ my $recipe = shift();
 
 my $cgi = new CGI();
 my $referer = $ENV{HTTP_REFERER} || "http://made.up.referrer/foo";
-my $openURL = Keystone::Resolver::OpenURL->newFromCGI($cgi, $referer);
+my $resolver = new Keystone::Resolver();
+my $openURL = Keystone::Resolver::OpenURL->newFromCGI($resolver, $cgi, $referer);
 my $val = Keystone::Resolver::OpenURL::_makeURI($openURL, $recipe);
 if (defined $val) {
     print $val;

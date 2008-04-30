@@ -21,12 +21,12 @@
     <metadata key="spage">8</metadata>
     <metadata key="volume">3</metadata>
   </data>
-  <result type="fulltext" priority="10" tag="Science"
-	service="Science Magazine Full Text"
-	>http://www.sciencemag.org/cgi/content/full/275/5304/1320</result>
   <result type="fulltext" priority="10" tag="Infotrac"
 	service="Gale Infotrac"
 	>http://www.infotrac.galegroup.com/itw/infomark/1/1/1/purl=rc11%5FITOF%5F%5Fjn_Science_AND_sp_1320_AND_vo_275?sw_aep=indexdata</result>
+  <result type="fulltext" priority="10" tag="Science"
+	service="Science Magazine Full Text"
+	>http://www.sciencemag.org/cgi/content/full/275/5304/1320</result>
   <result type="abstract" priority="10" tag="ScienceAbstracts"
 	service="Science Magazine Abstracts"
 	>http://www.sciencemag.org/cgi/content/abstract/275/5304/1320</result>

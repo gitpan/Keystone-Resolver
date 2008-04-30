@@ -1,4 +1,4 @@
-# $Id: Object.pm,v 1.32 2008-04-01 20:25:28 mike Exp $
+# $Id: Object.pm,v 1.34 2008-04-29 17:05:38 mike Exp $
 
 package Keystone::Resolver::DB::Object;
 
@@ -34,6 +34,7 @@ sub class {
 # Accessors and delegations
 sub db { shift()->{_db} }
 sub log { shift()->{_db}->log(@_) }
+sub quote { shift()->{_db}->quote(@_) }
 
 # Default implementations of subclass-specific virtual functions
 # fields() must be explicitly provided for searchable classes
@@ -229,10 +230,14 @@ sub create {
 	    grep { $_ eq $key } $class->physical_fields();
     }
 
-    my $sql = "INSERT INTO " . $class->table() .
-	" (" . join(", ", sort keys %data) . ") VALUES" .
-	" (" . join(", ", map { sql_quote($data{$_}) } sort keys %data) . ");";
-    my $id = $db->do($sql, 1);
+    my $table = $class->table();
+    my $sql = "INSERT INTO " . $db->quote($table) .
+	" (" . join(", ", map { $db->quote($_) } sort keys %data) . ") VALUES" .
+	" (" . join(", ", map { sql_quote($data{$_}) } sort keys %data) . ")";
+    $db->do($sql);
+    my $id = $db->last_insert_id($table);
+    die "can't get new record's ID" if !defined $id;
+
     return $db->find1($class, id => $id);
 }
 
@@ -291,11 +296,11 @@ sub update {
     }
 
     return 0 if !%data;		# nothing to do
-    my $sql = "UPDATE " . $this->table() . " SET " .
-	join(", ", map { "$_ = " . sql_quote($data{$_}) } sort keys %data) .
-	" WHERE id = " . $this->id() . ";";
+    my $sql = "UPDATE " . $this->quote($this->table()) . " SET " .
+	join(", ", map { $this->quote($_) . " = " . sql_quote($data{$_}) } sort keys %data) .
+	" WHERE " . $this->quote("id") . " = " . $this->id();
 
-    $this->db()->do($sql, 0);
+    $this->db()->do($sql);
     foreach my $key (keys %data) {
 	$this->field($key, $data{$key});
     }
@@ -307,10 +312,10 @@ sub update {
 sub delete {
     my $this = shift();
 
-    my $sql = "DELETE FROM " . $this->table() .
-	" WHERE id = " . $this->id() . ";";
+    my $sql = "DELETE FROM " . $this->quote($this->table()) .
+	" WHERE " . $this->quote("id") . " = " . $this->id();
 
-    $this->db()->do($sql, 0);
+    $this->db()->do($sql);
     # Wow, that embarrasingly easy
 }
 

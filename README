@@ -1,4 +1,4 @@
-$Id: README,v 1.20 2008-02-04 18:02:44 mike Exp $
+$Id: README,v 1.21 2008-04-30 11:36:10 mike Exp $
 
 
 Introduction
@@ -170,6 +170,26 @@ kr-test script:
 	perl -I lib bin/kr-test t/regression/zetoc-suuwassea
 
 
+Testing against a non-standard configution
+------------------------------------------
+
+The test-scripts are set up to run against the toy database if you
+just do "make test", using default values for environment variables
+that tell it how to connect to the vanilla MySQL database setup.  But
+those settings do not take precendence over any existing environment
+variable values.
+
+It's therefore possible, for example, to run this script using the
+read-only user, with something like:
+	$ KRrwuser=kr_read KRrwpw=kr_read_3636 make test
+(So that the admin.t test-script will fail after test 28, when it
+tries to modify the database.)
+
+More usefully, appropriate environment variable settings make it
+possible to run the test-suite against an Oracle database:
+	$ ORACLE_HOME=/usr/lib/oracle/xe/app/oracle/product/10.2.0/server LD_LIBRARY_PATH=/usr/lib/oracle/xe/app/oracle/product/10.2.0/server/lib KRdbms=Oracle KRdb=XE KRuser=ko_admin KRpw=ko_adm_3636 KRrwuser=ko_admin KRrwpw=ko_adm_3636 make test
+
+
 Installation the Debian way
 ---------------------------
 
@@ -208,6 +228,7 @@ To set up Keystone Resolver, you need to do the following steps:
   similar depending on what operating system you're using.  Note that
   you will in general need to change the hostnames in this file.
 
+
 Non-standard installation directory
 -----------------------------------
 
@@ -240,7 +261,7 @@ Email <info@indexdata.com> for details.
 Copyright and Licence
 ---------------------
 
-Copyright (C) 2004-2007 Index Data Aps.
+Copyright (C) 2004-2008 Index Data Aps.
 
 This library is free-as-in-freedom software (which means it's also
 open source); it is distributed under the GNU General Public Licence,

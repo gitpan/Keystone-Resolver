@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.4 2008-04-01 11:17:03 mike Exp $
+# $Id: Makefile,v 1.5 2008-04-30 16:58:14 mike Exp $
 
 # This way of running the tests is usually not needed, as the Perl
 # packaging system's "make test" also works.  But this way is
 # occasionally useful since it displays errors in more detail.
 
-AUTH=env KRuser=kr_read KRpw=kr_read_3636
+AUTH=env KRuser=$${KRuser:-kr_read} KRpw=$${KRpw:-kr_read_3636}
 
 test: passed
 	$(AUTH) perl -I../../lib ../../bin/kr-test $(KRTEST) nowarn=1 show_xml=1 `cat passed`

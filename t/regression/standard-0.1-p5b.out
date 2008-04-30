@@ -8,7 +8,7 @@
     <metadata key="spage">134</metadata>
     <metadata key="volume">12</metadata>
   </data>
-  <result type="error"
+  <result type="error" tag=""
 	>the resource database doesn't cover ISSN 1234-5678</result>
   <result type="citeref" priority="15" tag=""
 	service="Endnote citation"

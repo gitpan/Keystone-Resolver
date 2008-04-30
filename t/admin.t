@@ -1,4 +1,4 @@
-# $Id: admin.t,v 1.1 2008-04-01 20:17:01 mike Exp $
+# $Id: admin.t,v 1.3 2008-04-30 11:17:23 mike Exp $
 
 use strict;
 use warnings;
@@ -15,8 +15,8 @@ my $tag = $admin->hostname2tag("resolver.indexdata.com");
 ok(defined $tag, "determined tag");
 is($tag, "id", "tag is 'id'");
 
-$ENV{KRrwuser} = "kr_admin";
-$ENV{KRrwpw} = "kr_adm_3636";
+$ENV{KRrwuser} ||= "kr_admin";
+$ENV{KRrwpw} ||= "kr_adm_3636";
 
 my $site = $admin->site($tag);
 ok(defined $site, "found site");

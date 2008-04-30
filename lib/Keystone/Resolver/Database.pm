@@ -1,4 +1,4 @@
-# $Id: Database.pm,v 1.33 2008-04-10 00:15:25 mike Exp $
+# $Id: Database.pm,v 1.40 2008-04-30 16:57:56 mike Exp $
 
 package Keystone::Resolver::Database;
 
@@ -96,6 +96,7 @@ sub new {
 
     my $this = bless {
 	resolver => $resolver,
+	dbms => $dbms,
 	dbh => $dbh,
 	cache => {},
     }, $class;
@@ -105,6 +106,13 @@ sub new {
     Scalar::Util::weaken($this->{resolver});
 
     $this->log(Keystone::Resolver::LogLevel::LIFECYCLE, "new DB $this with resolver=$resolver");
+
+    if ($this->oracle()) {
+	# For some reason, this combination makes searching case-blind
+	$this->do("alter session set NLS_COMP=ANSI");
+	$this->do("alter session set NLS_SORT=BINARY_CI");
+    }
+
     return $this;
 }
 
@@ -113,6 +121,12 @@ sub DESTROY {
     my $this = shift();
     Keystone::Resolver::static_log(Keystone::Resolver::LogLevel::LIFECYCLE,
 				   "dead DB $this");
+}
+
+
+# We need to know if we're Oracle, as all the SQL needs tweaking
+sub oracle {
+    shift()->{dbms} eq "Oracle";
 }
 
 
@@ -135,13 +149,13 @@ sub loglookup {
 }
 
 
-sub genre_by_name {
+sub genre_by_tag {
     my $this = shift();
-    my($name) = @_;
+    my($tag) = @_;
 
-    my $obj = $this->find1("Genre", name => $name);
+    my $obj = $this->find1("Genre", tag => $tag);
     return undef if !defined $obj;
-    $this->loglookup("genre_by_name($name) -> ", $obj);
+    $this->loglookup("genre_by_tag($tag) -> ", $obj);
     return $obj;
 }
 
@@ -196,10 +210,17 @@ sub services_by_type {
     my $this = shift();
     my($stID) = @_;
 
-    my @obj = $this->find("Service", "priority", service_type_id => $stID);
+    my @obj = $this->find("Service", "priority, tag", service_type_id => $stID);
     $this->loglookup("services_by_type($stID) -> " .
 		     join(", ", map { $_->id() } @obj));
-    return @obj;
+
+    # It seems that we have to sort the results ourselves rather than
+    # letting the database do it, because Oracle misinterprets empty
+    # strings as NULL and sorts them to the freakin' end.  *sigh*
+    return sort { $a->priority() <=> $b->priority() ||
+		      (!defined $a->tag() ? -1 :
+		       !defined $b->tag() ? 1 :
+		       $a->tag() cmp $b->tag()) } @obj;
 }
 
 
@@ -370,7 +391,7 @@ sub _findraw {
     my($class, $single, $sortby, @conds) = @_;
     $class = "Keystone::Resolver::DB::$class" if $class !~ /::/;
 
-    my($cond, $rendered, @values) = _make_cond(@conds);
+    my($cond, $rendered, @values) = $this->_make_cond(@conds);
     my($sth, undef, $errmsg) = $this->_findcond($class, $cond, $sortby, 1, @values);
     die "_findraw(): $errmsg" if !defined $sth;
 
@@ -392,6 +413,7 @@ sub _findraw {
 
 
 sub _make_cond {
+    my $this = shift();
     my(@conds) = @_;
 
     return (undef, "")
@@ -421,9 +443,10 @@ sub _make_cond {
 	my $res;
 	if (ref $_) {
 	    my($key, $n) = @$_;
-	    $res = "(" . join(" OR ", map { "$key = ?" } (1..$n)) . ")";
+	    $res = "(" . join(" OR ", map { $this->quote($key) 
+						. " = ?" } (1..$n)) . ")";
 	} else {
-	    $res = "$_ = ?";
+	    $res = $this->quote($_) . " = ?";
 	}
 	$res;
     } @keys);
@@ -442,12 +465,14 @@ sub _findcond {
 
     my $table = $class->table();
     my @fields = $class->physical_fields();
-    my $want = join(", ", @fields);
+    @fields = map { $this->quote($_) } @fields;
 
-    my $sql = "SELECT $want FROM $table";
+    my $sql = "SELECT " . join(", ", @fields) . " FROM ". $this->quote($table);
     $sql .= " WHERE $cond" if defined $cond;
-    $sql .= " ORDER BY $sortby" if defined $sortby;
-    my($sth, $errmsg) = $this->do($sql, 0, @values);
+    $sql .= " ORDER BY " . $this->quote($sortby)
+	if defined $sortby;
+
+    my($sth, $errmsg) = $this->do($sql, @values);
     return (undef, undef, $errmsg) if !defined $sth;
 
     my $count;
@@ -479,8 +504,8 @@ sub _count {
     # actual query twice and damned well count the records.  Obviously
     # very inefficient.  So it goes: it'll never happen on a Real
     # Database.
-    if ($dbh->{Driver}->{Name} ne "CSV") {
-	my $sql = "SELECT id FROM $table";
+    if ($dbh->{Driver}->{Name} eq "CSV") {
+	my $sql = "SELECT " . $this->quote("id") . " FROM " . $this->quote($table);
 	$sql .= " WHERE $cond" if defined $cond;
 	my($sth, $errmsg) = $this->do($sql);
 	die "can't count rows by hand: $errmsg" if !defined $sth;
@@ -492,7 +517,7 @@ sub _count {
     }
 
     # Default implemetation
-    my $sql = "SELECT COUNT(*) FROM $table";
+    my $sql = "SELECT COUNT(*) FROM " . $this->quote($table);
     $sql .= " WHERE $cond" if defined $cond;
     my $countref = $dbh->selectall_arrayref($sql);
     die "can't count rows with '$sql': " . $dbh->errstr()
@@ -508,22 +533,74 @@ sub _count {
 #
 sub do {
     my $this = shift();
-    my($sql, $return_id, @values) = @_;
+    my($sql, @values) = @_;
     my $dbh = $this->{dbh};
 
     my $sth = $dbh->prepare($sql);
     return (undef, $dbh->errstr()) if !$sth;
-    $this->log(Keystone::Resolver::LogLevel::SQL, "do(): $sql [", join(", ", @values), "]");
+    $this->log(Keystone::Resolver::LogLevel::SQL,
+	       "do(): $sql [", join(", ", @values), "]");
     $sth->execute(@values) or return (undef, $dbh->errstr());
-    return $sth if !$return_id;
+    return $sth;
+}
 
-    # last_insert_id() doesn't work for DBD::mysql, but there is a
-    # MySQL-specific hack that we can use instead.
-    #my $id = $dbh->last_insert_id();
-    my $id = $dbh->{mysql_insertid};
-    die "can't get new record's ID" if !defined $id;
 
-    return $id;
+sub last_insert_id {
+    my $this = shift();
+    my($table) = @_;
+
+    my $dbh = $this->{dbh};
+    my $dbms = $this->{dbms};
+    if ($dbms eq "mysql") {
+	# last_insert_id() doesn't work for DBD::mysql, but there is a
+	# MySQL-specific hack that we can use instead.
+	return $dbh->{mysql_insertid};
+    } elsif ($dbms eq "Oracle") {
+	my $sql = qq[SELECT "${table}_id_seq".CURRVAL FROM dual];
+	my $sth = $this->do($sql);
+	die "can't find sequence number for Oracle" if !defined $sth;
+	my $refref = $sth->fetchall_arrayref();
+	die "can't extract sequence data for Oracle" if !defined $refref;
+	die "no sequence data for Oracle" if !@$refref;
+	warn "multiple sequence data for Oracle" if @$refref > 1;
+	my $ref = $refref->[0];
+	die "still can't extract sequence data for Oracle" if !defined $ref;
+	die "still no sequence data for Oracle" if !@$ref;
+	warn "still multiple sequence data for Oracle" if @$ref > 1;
+	my $id = $ref->[0];
+	warn "last_insert_id($table) returning $id for Oracle";
+	return $id;
+    } else {
+	# This is _supposed_ to be a generic
+	return $dbh->last_insert_id(undef, undef, $table, "id");
+    }
+}
+
+
+# Quotes a table-name or column-name for use in an SQL statement
+# appropriately for the underying RDBMS.  Basically, this just means
+# shoving it in double quotes for Oracle.
+#
+sub quote {
+    my $this = shift();
+    my($name) = @_;
+
+    if (!$this->oracle()) {
+	# Easy!
+	return $name;
+    }
+
+    # We need to deal with compound ORDER BY specifications such as
+    #	priority asc, name
+    # We do this by separately double-quoting the first
+    # space-separated word or each comma-and-maybe-space-separated
+    # component.  *sigh*
+
+    return join(", ", map {
+	my @words = split /\s+/, $_;
+	my $first = shift @words;
+	join(" ", qq["$first"], @words);
+    } split /,\s*/, $name);
 }
 
 

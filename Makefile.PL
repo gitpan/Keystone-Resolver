@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.21 2008-02-08 11:06:46 mike Exp $
+# $Id: Makefile.PL,v 1.22 2008-04-11 11:20:20 mike Exp $
 
 use 5.008;
 use ExtUtils::MakeMaker;
@@ -21,6 +21,7 @@ WriteMakefile(
 	Text::Iconv => 1.2,
 	Digest::MD5 => 2.33,
 	HTML::Entities => 1.32, # libhtml-parser-perl
+	Scalar::Util => 1.13,
 	# You also need a web server such as Apache 1.3.x or 2.0.x.
 	# You also need a database driver such as DBD::mysql
 	# [libdbd-mysql-perl].  And if you need to make a local

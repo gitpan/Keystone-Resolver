@@ -1,4 +1,4 @@
-# $Id: OpenURL.pm,v 1.24 2008-04-10 14:22:11 mike Exp $
+# $Id: OpenURL.pm,v 1.28 2008-04-30 16:39:00 mike Exp $
 
 package Keystone::Resolver::OpenURL;
 
@@ -89,35 +89,39 @@ sub DESTROY {
 
 =head2 newFromCGI()
 
- $openURL = newFromCGI Keystone::Resolver::OpenURL($cgi, $ENV{HTTP_REFERER});
- $openURL = newFromCGI Keystone::Resolver::OpenURL($cgi, $ENV{HTTP_REFERER},
-         { xml => 1, loglevel => 7 });
- $openURL = newFromCGI Keystone::Resolver::OpenURL($cgi, $ENV{HTTP_REFERER},
-         undef, $resolver);
+ $openURL = newFromCGI Keystone::Resolver::OpenURL($resolver, $cgi,
+	$ENV{HTTP_REFERER});
+ $openURL = newFromCGI Keystone::Resolver::OpenURL($resolver, $cgi,
+	$ENV{HTTP_REFERER}, { xml => 1, loglevel => 7 });
 
 This convenience method creates an OpenURL object from a set of CGI
 parameters, for the common case that the transport is HTTP-based.  it
-behaves the same as the general constructor's C<new()> except that
-that a C<CGI> object is passed in place of the general constructor's
-C<$resolver>, C<$argsref> and C<$base> arguments.
+behaves the same as the general constructor, C<new()>, except that
+that a C<CGI> object is passed in place of the C<$argsref> and
+C<$baseURL> arguments.
 
-Unless a C<Keystone::Resolver> object is provided as the fourth
-argument, a new temporary one is created and associated with the
-OpenURL object.  It is initialised with options taken from C<$cgi>:
-keys prefixed with C<opt_> are interpreted as resolver options, like
-this:
+Additionally, a set of options may be passed in: unless overridden by
+options in the CGI parameters, these are applied to the C<$resovler>.
+Parameters in C<$cgi> whose keys are prefixed with C<opt_> are
+interpreted as resolver options, like this:
 
 	opt_loglevel=7&opt_logprefix=ERROR
 
 All other keys in the CGI object are assumed to be part of the OpenURL
-context object.  Additional options may be passed into the temporary
-resolver in the form of an optional third argument, a hash-reference.
+context object.
+
+(### The option handling is arguably a mistake: the options should
+apply to the OpenURL object, not the resolver that it uses -- but at
+present, OpenURL objects do not have their own options at all.)
 
 =cut
 
 sub newFromCGI {
     my $class = shift();
-    my($cgi, $referer, $optsref, $resolver) = @_;
+#   my($cgi, $referer, $optsref, $resolver) = @_;
+    my($resolver, $cgi, $referer, $optsref) = @_;
+    die "no resolver defined in newFromCGI()"
+	if !defined $resolver;
 
     my %args;
     my %opts = defined $optsref ? %$optsref : ();
@@ -145,15 +149,11 @@ sub newFromCGI {
 	}
     }
 
-    my $baseURL = $opts{baseURL} || $cgi->url();
-    if (defined $resolver) {
-	foreach my $key (keys %opts) {
-	    $resolver->option($key, $opts{$key});
-	}
-    } else {
-	$resolver = new Keystone::Resolver(%opts);
+    foreach my $key (keys %opts) {
+	$resolver->option($key, $opts{$key});
     }
 
+    my $baseURL = $opts{baseURL} || $cgi->url();
     return $class->new($resolver, \%args, $baseURL, $referer);
 }
 
@@ -538,7 +538,7 @@ sub _resolve_metadata {
     my $genre;
     my $genreTag = $this->rft("genre");
     if (defined $genreTag) {
-	$genre = $db->genre_by_name($genreTag);
+	$genre = $db->genre_by_tag($genreTag);
 	return "unsupported genre '$genreTag' specified"
 	    if !defined $genre;
     } else {
@@ -610,7 +610,8 @@ sub _process_rules {
 	    if ($exclude) {
 		my @newst = ();
 		foreach my $st (@$stref) {
-		    push @newst, $st if !grep { $st->tag() eq $_ } @tags;
+		    push @newst, $st if !grep { defined $st->tag() &&
+						    $st->tag() eq $_ } @tags;
 		}
 		@$stref = @newst;
 	    } elsif ($class eq "ServiceType") {
@@ -919,8 +920,17 @@ __EOT__
 	$xml .= " type=\"" . _xmlencode($res->type()) .  "\"";
 	$xml .= " priority=\"" . _xmlencode($res->priority()) . "\""
 	    if defined $res->priority();
-	$xml .= " tag=\"" . _xmlencode($res->tag()) . "\""
-	    if defined $res->tag();
+	# In rational databases such as MySQL, NULL values are NULL,
+	# and are distinct from empty strings.  Therefore, NULL fields
+	# can be omitted here.  In Oracle, though, that distinction is
+	# steamrollered, and all empty fields become NULL.  So in
+	# order to maintain the same output irrespective of which
+	# RDBMS we're using (so that the same regression-tests work
+	# for both), we need to emit an empty string even when the tag
+	# is actually NULL.  *sigh*
+	my $tag = $res->tag();
+	$tag = "" if !defined $tag;
+	$xml .= " tag=\"" . _xmlencode($tag) . "\"";
 	$xml .= "\n\t" if defined $service || defined $mimetype;
 	$xml .= "service=\"" . _xmlencode($service) .  "\""
 	    if defined $service;

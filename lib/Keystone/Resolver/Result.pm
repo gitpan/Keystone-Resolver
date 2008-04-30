@@ -1,4 +1,4 @@
-# $Id: Result.pm,v 1.2 2008-02-07 14:02:44 mike Exp $
+# $Id: Result.pm,v 1.3 2008-04-25 17:45:52 mike Exp $
 
 package Keystone::Resolver::Result;
 
@@ -156,7 +156,8 @@ sub render() {
     my $priority = $this->priority();
     my $text = $this->text();
 
-    return ("$type: $tag" .
+    return ("$type: " .
+	    (defined $tag ? "$tag" : "") .
 	    (defined $service ? "=$service" : "") .
 	    (defined $priority ? " (priority $priority)" : "") .
 	    " - $text");

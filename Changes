@@ -1,8 +1,27 @@
-$Id: Changes,v 1.69 2008-04-10 14:25:17 mike Exp $
+$Id: Changes,v 1.75 2008-04-30 17:27:56 mike Exp $
 
 Revision history for Perl extension Keystone::Resolver.
 
-See bottom of file of work still to be done.
+1.22  (IN PROGRESS)
+	- Oracle back-end now fully functional and tested, both with
+	  the resolver itself and the Admin UI.  See db/README for
+	  instructions on making a toy Oracle resource database, and
+	  the top-level README for instructions on running the
+	  test-suite against this.
+	- Various changes to canonicalise the order of things like
+	  equal-priority results in the XML returned from
+	  resolve_to_xml(), required so that the same regression-test
+	  suite can be used with both MySQL and Oracle.
+	- Add a test-script that invokes the actual "resolve" script.
+	  The absence of this was responsible for 1.20 going out while
+	  "resolve" itself was still not making its own $resolver
+	  object, while the various test-scripts were.
+	- It is now mandatory to pass a $resolver into
+	  OpenURL::newFromCGI(), since memory problems will always
+	  result if it is allowed to allocate its own.
+	- Change API of OpenURL::newFromCGI() to reflect mandatory
+	  $resolver and better match the default constructor, new().
+	- Add Makefile.PL dependency on Scalar::Util.pm
 
 1.21  Thu Apr 10 15:23:53 BST 2008
 	- URGENT BUGFIX RELEASE: the resolve script now makes its own
@@ -349,9 +368,4 @@ Revision history for Perl extension Resolver.
 	  In fact, this Perl-module superstructure was retro-fitted to
 	  a project that had already undergone a great deal of
 	  development prior to the h2xs-ization.
-
-TO DO
-	- ### When an OpenURL contains multiple rft_id's, as in
-	  t/regression/openly-01.in, handle them deterministically,
-	  and as required by the standard if it provides guidance.
 
