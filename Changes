@@ -2,6 +2,9 @@ $Id: Changes,v 1.75 2008-04-30 17:27:56 mike Exp $
 
 Revision history for Perl extension Keystone::Resolver.
 
+1.23  Thu May  1 10:26:03 BST 2008
+	- Same as 1.22, except that it is properly date-stamped.
+
 1.22  (IN PROGRESS)
 	- Oracle back-end now fully functional and tested, both with
 	  the resolver itself and the Admin UI.  See db/README for
